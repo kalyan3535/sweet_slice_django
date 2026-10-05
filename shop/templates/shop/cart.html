@@ -1,0 +1,152 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Your Shopping Bag — Sweet Slice Patisserie{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:40px; padding-bottom:90px;">
+    <!-- Page Header -->
+    <div style="margin-bottom:36px;">
+        <span class="eyebrow">Shopping Bag</span>
+        <h1 class="editorial-title" style="font-size:2.8rem; margin-bottom:8px;">Your Celebration Cakes</h1>
+        <p style="color:var(--color-cocoa-muted); font-size:1rem;">Review your selected creations before proceeding to seamless checkout.</p>
+    </div>
+
+    {% if cart_info.items %}
+    <div class="cart-split-grid">
+        <!-- Left: Items List -->
+        <div class="checkout-box" style="padding: clamp(20px, 4vw, 36px);">
+            <!-- Free Delivery Tracker -->
+            <div style="background:var(--color-accent-caramel-light); border:1px solid rgba(184,130,70,0.25); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:28px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.86rem; font-weight:600; color:var(--color-cocoa-dark); flex-wrap:wrap; gap:8px;">
+                    <span>
+                        {% if cart_info.is_free_delivery %}
+                            🎉 You have unlocked <strong>Complimentary Chilled Delivery</strong>!
+                        {% else %}
+                            🚚 Add <strong>₹{{ cart_info.amount_needed_for_free_delivery }}</strong> more for <strong>Complimentary Chilled Delivery</strong>
+                        {% endif %}
+                    </span>
+                    <span style="font-size:0.78rem; color:var(--color-accent-caramel);">Threshold: ₹700</span>
+                </div>
+                <div style="height:6px; background:rgba(184,130,70,0.18); border-radius:var(--radius-pill); overflow:hidden; margin-top:8px;">
+                    <div style="height:100%; background:var(--color-accent-caramel); width:{{ cart_info.delivery_progress_percent }}%; transition:width 0.4s ease;"></div>
+                </div>
+            </div>
+
+            <!-- Items -->
+            {% for item in cart_info.items %}
+            <div class="cart-item-row">
+                <img src="{{ item.cake.image_url }}" alt="{{ item.cake.name }}" style="width:100%; max-width:84px; height:84px; border-radius:var(--radius-md); object-fit:cover;">
+
+                <div>
+                    <h3 style="font-family:var(--font-serif); font-size:1.15rem; font-weight:600; margin-bottom:4px;">
+                        {{ item.cake.name }}
+                    </h3>
+                    <div style="font-size:0.82rem; color:var(--color-cocoa-muted); margin-bottom:4px;">
+                        Size: <strong>{{ item.weight }}</strong> &nbsp;•&nbsp; ₹{{ item.unit_price }}
+                    </div>
+                    {% if item.custom_msg %}
+                        <div style="font-size:0.8rem; color:var(--color-accent-rose); font-style:italic;">
+                            Piped message: "{{ item.custom_msg }}"
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="cart-item-right">
+                    <!-- Stepper -->
+                    <div style="display:inline-flex; align-items:center; border:1px solid var(--color-border); border-radius:var(--radius-pill); background:#FAF7F2; margin-bottom:8px;">
+                        <button type="button" class="ajax-qty-btn" data-cake-id="{{ item.cake.id }}" data-action="dec" style="background:none; border:none; padding:4px 10px; cursor:pointer; font-weight:700;">−</button>
+                        <span style="font-size:0.88rem; font-weight:700; padding:0 6px;">{{ item.quantity }}</span>
+                        <button type="button" class="ajax-qty-btn" data-cake-id="{{ item.cake.id }}" data-action="inc" style="background:none; border:none; padding:4px 10px; cursor:pointer; font-weight:700;">+</button>
+                    </div>
+
+                    <div style="font-size:1.1rem; font-weight:700; color:var(--color-cocoa-dark);">
+                        ₹{{ item.subtotal }}
+                    </div>
+                    <a href="{% url 'remove_from_cart' item.cake.id %}" style="font-size:0.75rem; color:#DC2626; text-decoration:underline;">
+                        Remove
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:24px; flex-wrap:wrap; gap:12px;">
+                <a href="{% url 'cakes' %}" class="btn btn-soft btn-sm">
+                    <span>← Continue Shopping</span>
+                </a>
+                <a href="{% url 'clear_cart' %}" style="font-size:0.8rem; color:var(--color-cocoa-muted); text-decoration:underline;">
+                    Clear bag
+                </a>
+            </div>
+        </div>
+
+        <!-- Right: Distraction-free Summary -->
+        <div class="checkout-box" style="padding: clamp(20px, 4vw, 36px);">
+            <h3 style="font-size:1.35rem; font-weight:600; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--color-border-subtle);">
+                Order Summary
+            </h3>
+
+            <!-- Coupon Input -->
+            <form method="post" action="{% url 'apply_coupon' %}" style="margin-bottom:20px;">
+                {% csrf_token %}
+                <div style="display:flex; gap:8px;">
+                    <input type="text" name="code" class="form-input-clean" placeholder="Promo code (e.g. SWEET20)" style="margin-bottom:0; text-transform:uppercase; font-size:0.85rem; padding:10px 14px;" value="{{ cart_info.coupon.code|default:'' }}">
+                    <button type="submit" class="btn btn-secondary btn-sm" style="padding:10px 16px;">Apply</button>
+                </div>
+            </form>
+
+            {% if cart_info.coupon %}
+                <div style="background:var(--color-success-bg); border-radius:var(--radius-sm); padding:8px 12px; font-size:0.8rem; color:var(--color-success); font-weight:600; margin-bottom:16px; display:flex; justify-content:space-between;">
+                    <span>Coupon {{ cart_info.coupon.code }} ({{ cart_info.coupon.percent }}% off)</span>
+                    <a href="{% url 'remove_coupon' %}" style="color:#DC2626;">✕</a>
+                </div>
+            {% endif %}
+
+            <!-- Financials -->
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.92rem; color:var(--color-cocoa-muted);">
+                <span>Subtotal</span>
+                <span style="font-weight:600; color:var(--color-cocoa-dark);">₹{{ cart_info.subtotal }}</span>
+            </div>
+
+            {% if cart_info.discount > 0 %}
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.92rem; color:var(--color-success); font-weight:600;">
+                <span>Discount</span>
+                <span>−₹{{ cart_info.discount }}</span>
+            </div>
+            {% endif %}
+
+            <div style="display:flex; justify-content:space-between; margin-bottom:16px; font-size:0.92rem; color:var(--color-cocoa-muted);">
+                <span>Chilled Delivery</span>
+                <span>{% if cart_info.delivery_fee == 0 %}<strong style="color:var(--color-success);">FREE</strong>{% else %}₹{{ cart_info.delivery_fee }}{% endif %}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; font-size:1.35rem; font-family:var(--font-serif); font-weight:600; padding-top:16px; border-top:1px solid var(--color-border); margin-bottom:28px; color:var(--color-cocoa-dark);">
+                <span>Total</span>
+                <span>₹{{ cart_info.total }}</span>
+            </div>
+
+            <!-- Primary Checkout CTA -->
+            <a href="{% url 'checkout' %}" class="btn btn-primary btn-block btn-lg" id="cartProceedBtn">
+                <span>Proceed to Checkout</span>
+                <span>→</span>
+            </a>
+
+            <div style="text-align:center; margin-top:14px; font-size:0.78rem; color:var(--color-cocoa-muted);">
+                🔒 256-Bit SSL Secured • Razorpay Instant Demo
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty Cart -->
+    <div style="text-align:center; padding:90px 20px; background:#FFFFFF; border-radius:var(--radius-xl); border:1px solid var(--color-border); max-width:600px; margin:40px auto; box-shadow:var(--shadow-subtle);">
+        <div style="font-size:3.5rem; margin-bottom:16px;">🧁</div>
+        <h2 style="font-size:2rem; margin-bottom:10px;">Your Bag is Currently Empty</h2>
+        <p style="color:var(--color-cocoa-muted); font-size:1rem; margin-bottom:28px;">Explore our signature Belgian chocolate truffles, cheesecakes, or custom designs.</p>
+        <a href="{% url 'cakes' %}" class="btn btn-primary btn-lg">
+            <span>Explore Menu</span>
+            <span>→</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,311 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sweet Slice — Luxury Boutique Patisserie{% endblock %}</title>
+    
+    <!-- Meta SEO -->
+    <meta name="description" content="{% block meta_description %}Bespoke handcrafted celebration cakes, artisan cheesecakes, and luxury confectionery baked with Belgian chocolate and organic dairy.{% endblock %}">
+    
+    <!-- Editorial Typography Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'shop/css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- ==============================================================
+         BOUTIQUE NAVIGATION
+         Desktop: Logo | Cakes | Collections | About | Contact | Search | Cart
+         Mobile: Logo | Search | Cart | Menu
+         ============================================================== -->
+    <header class="boutique-nav" id="boutiqueNav">
+        <div class="container">
+            <div class="nav-container">
+                <!-- Brand Logo -->
+                <a href="{% url 'home' %}" class="boutique-logo" id="mainBoutiqueLogo">
+                    <span>Sweet Slice</span>
+                    <span class="logo-dot"></span>
+                    <span class="logo-sub">Patisserie</span>
+                </a>
+
+                <!-- Desktop Navigation Menu -->
+                <nav>
+                    <ul class="nav-menu" id="desktopNavMenu">
+                        <li>
+                            <a href="{% url 'cakes' %}" class="nav-link {% if request.resolver_match.url_name == 'cakes' and not request.GET.category %}active{% endif %}">Cakes</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'collections' %}" class="nav-link {% if request.GET.category %}active{% endif %}">Collections</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'contact' %}" class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Nav Actions -->
+                <div class="nav-actions">
+                    <!-- Search Trigger -->
+                    <a href="{% url 'cakes' %}" class="nav-icon-btn" title="Search cakes catalog" aria-label="Search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </a>
+
+                    <!-- User Account / Authentication (Desktop Only) -->
+                    <div class="nav-desktop-auth">
+                        {% if user.is_authenticated %}
+                            <div class="nav-user-pill" style="display:inline-flex; align-items:center; gap:8px;">
+                                <span style="font-size:0.84rem; font-weight:600; color:var(--color-cocoa-dark); white-space:nowrap;">
+                                    Hi, {{ user.first_name|default:user.username }}
+                                </span>
+                                {% if user.is_staff %}
+                                    <a href="{% url 'admin_dashboard' %}" class="btn-admin-subtle" title="Executive Dashboard">Admin</a>
+                                {% endif %}
+                                <a href="{% url 'logout' %}" class="btn btn-soft btn-sm" style="padding:6px 12px; font-size:0.78rem;" title="Sign Out">
+                                    Sign Out
+                                </a>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-soft btn-sm" style="padding:7px 16px; font-size:0.84rem; display:inline-flex; align-items:center; gap:6px;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span>Sign In</span>
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Cart Pill -->
+                    <a href="{% url 'cart' %}" class="cart-pill-btn" id="navCartPill" aria-label="Shopping Cart">
+                        <span class="cart-pill-text">Cart</span>
+                        <span class="cart-count-bubble" id="navCartCount">{{ cart_count|default:0 }}</span>
+                    </a>
+
+                    <!-- Mobile Menu Trigger -->
+                    <button type="button" class="mobile-menu-trigger" id="mobileMenuTrigger" aria-label="Open menu" aria-expanded="false">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Toast Container -->
+    <div class="toast-container" id="toastContainer">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast">
+                    <span>✨</span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ==============================================================
+         CLEAN PREMIUM FOOTER
+         Logo | Short brand statement | Navigation | Support | Contact | Social | Copyright
+         ============================================================== -->
+    <footer class="boutique-footer">
+        <div class="container">
+            <div class="footer-main-grid">
+                <!-- Logo & Statement -->
+                <div>
+                    <a href="{% url 'home' %}" class="boutique-logo" style="color:#FFFFFF;">
+                        <span>Sweet Slice</span>
+                        <span class="logo-dot"></span>
+                        <span class="logo-sub" style="color:#A89893;">Patisserie</span>
+                    </a>
+                    <p class="footer-statement">
+                        Handcrafted celebration cakes and luxury patisserie created with single-origin chocolate, organic dairy, and relentless dedication to taste and beauty.
+                    </p>
+                </div>
+
+                <!-- Navigation -->
+                <div>
+                    <h4 class="footer-col-heading">Boutique</h4>
+                    <ul class="footer-link-group">
+                        <li><a href="{% url 'cakes' %}">All Cakes</a></li>
+                        <li><a href="{% url 'collections' %}?category=Chocolate">Chocolate Truffles</a></li>
+                        <li><a href="{% url 'collections' %}?category=Cheesecake">Cheesecakes</a></li>
+                        <li><a href="{% url 'about' %}">Our Story</a></li>
+                    </ul>
+                </div>
+
+                <!-- Customer Support -->
+                <div>
+                    <h4 class="footer-col-heading">Support</h4>
+                    <ul class="footer-link-group">
+                        <li><a href="{% url 'track_order' %}">Track Delivery</a></li>
+                        <li><a href="{% url 'cart' %}">Shopping Bag</a></li>
+                        <li><a href="{% url 'contact' %}">Studio Inquiries</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact & Social -->
+                <div>
+                    <h4 class="footer-col-heading">Atelier Studio</h4>
+                    <p style="color:#C2B3AC; font-size:0.9rem; line-height:1.6; margin-bottom:14px;">
+                        Palpara More, NH12<br>
+                        Krishnanagar, Nadia, West Bengal<br>
+                        📞 +91 98200 12345
+                    </p>
+                    <div style="display:flex; gap:14px; font-size:1.1rem; color:#FFFFFF;">
+                        <a href="#" aria-label="Instagram">📸</a>
+                        <a href="#" aria-label="Pinterest">📌</a>
+                        <a href="https://wa.me/919820012345" target="_blank" aria-label="WhatsApp">💬</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom Line -->
+            <div class="footer-bottom-line">
+                <div>
+                    © 2026 Sweet Slice Patisserie. All rights reserved.
+                </div>
+                <div style="display:flex; gap:16px;">
+                    <span>Razorpay Secured</span>
+                    <span>•</span>
+                    <span>Chilled Delivery Guaranteed</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop"></div>
+
+    <!-- Mobile Drawer Navigation Slide-Out -->
+    <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+        <div class="mobile-drawer-header">
+            <div class="boutique-logo" style="font-size:1.35rem;">
+                <span>Sweet Slice</span>
+                <span class="logo-dot"></span>
+                <span class="logo-sub">Patisserie</span>
+            </div>
+            <button type="button" class="mobile-drawer-close" id="mobileDrawerClose" aria-label="Close menu">✕</button>
+        </div>
+
+        <!-- Mobile Auth Status Banner -->
+        <div class="mobile-drawer-auth">
+            {% if user.is_authenticated %}
+                <div class="mobile-user-card">
+                    <div class="mobile-user-avatar">
+                        {{ user.first_name|first|default:user.username|first|upper }}
+                    </div>
+                    <div class="mobile-user-details">
+                        <div class="mobile-user-name">Hi, {{ user.first_name|default:user.username }}</div>
+                        <div class="mobile-user-role">{% if user.is_staff %}Executive Admin{% else %}Member Patron{% endif %}</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:12px;">
+                    {% if user.is_staff %}
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary btn-sm" style="flex:1; font-size:0.8rem; padding:8px;">
+                            ⚙️ Admin
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="btn btn-soft btn-sm" style="flex:1; font-size:0.8rem; padding:8px;">
+                        Sign Out
+                    </a>
+                </div>
+            {% else %}
+                <div style="text-align:center; padding:6px 0;">
+                    <p style="font-size:0.84rem; color:var(--color-cocoa-muted); margin-bottom:12px;">Sign in to customize cakes and track orders.</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-block btn-sm" style="padding:10px 16px;">
+                        <span>Sign In or Register</span>
+                        <span>→</span>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Drawer Links -->
+        <nav class="mobile-drawer-nav">
+            <ul class="mobile-nav-list">
+                <li>
+                    <a href="{% url 'home' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                        <span>🏠 Home</span>
+                        <span class="mobile-nav-arrow">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'cakes' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'cakes' and not request.GET.category %}active{% endif %}">
+                        <span>🎂 All Cakes &amp; Gateaux</span>
+                        <span class="mobile-nav-arrow">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'collections' %}" class="mobile-nav-link {% if request.GET.category %}active{% endif %}">
+                        <span>✨ Curated Collections</span>
+                        <span class="mobile-nav-arrow">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'about' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+                        <span>📖 Our Story &amp; Craft</span>
+                        <span class="mobile-nav-arrow">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'contact' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
+                        <span>📍 Atelier &amp; Contact</span>
+                        <span class="mobile-nav-arrow">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'track_order' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'track_order' %}active{% endif %}">
+                        <span>🚚 Track My Delivery</span>
+                        <span class="mobile-nav-arrow">→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'cart' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'cart' %}active{% endif %}">
+                        <span>🛍️ Shopping Bag ({{ cart_count|default:0 }})</span>
+                        <span class="mobile-nav-arrow">→</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Mobile Drawer Footer / Quick Concierge -->
+        <div class="mobile-drawer-footer">
+            <div style="font-size:0.75rem; font-weight:700; color:var(--color-accent-caramel); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">
+                Studio Concierge
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <a href="tel:+919820012345" style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--color-cocoa-dark); font-weight:600;">
+                    <span>📞</span> +91 98200 12345
+                </a>
+                <a href="https://wa.me/919820012345" target="_blank" style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:#16A34A; font-weight:600;">
+                    <span>💬</span> Chat on WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JavaScript -->
+    <script src="{% static 'shop/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,144 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Our Cakes & Collections — Sweet Slice Patisserie{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:40px; padding-bottom:90px;">
+    <!-- Editorial Page Header -->
+    <div style="text-align:center; max-width:640px; margin:0 auto 40px;">
+        <span class="eyebrow">The Patisserie Counter</span>
+        <h1 class="editorial-title" style="font-size:3rem; margin-bottom:12px;">Artisanal Cakes & Gateaux</h1>
+        <p style="color:var(--color-cocoa-muted); font-size:1.05rem;">
+            Every cake is baked fresh to order using Belgian chocolate, pure butter, and organic fruit compotes.
+        </p>
+    </div>
+
+    <!-- Minimal Collection Navigation & Search -->
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:36px; padding-bottom:18px; border-bottom:1px solid var(--color-border);">
+        <!-- Collections Filters -->
+        <div style="display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:4px; max-width:100%; flex-shrink:0;">
+            <a href="{% url 'cakes' %}{% if search_query %}?q={{ search_query }}{% endif %}" 
+               class="btn btn-sm {% if current_category == 'All' and not eggless_only %}btn-primary{% else %}btn-soft{% endif %}" style="white-space:nowrap;">
+                All Cakes
+            </a>
+            <a href="{% url 'cakes' %}?category=Chocolate{% if search_query %}&q={{ search_query }}{% endif %}" 
+               class="btn btn-sm {% if current_category == 'Chocolate' %}btn-primary{% else %}btn-soft{% endif %}" style="white-space:nowrap;">
+                🍫 Chocolate
+            </a>
+            <a href="{% url 'cakes' %}?category=Cheesecake{% if search_query %}&q={{ search_query }}{% endif %}" 
+               class="btn btn-sm {% if current_category == 'Cheesecake' %}btn-primary{% else %}btn-soft{% endif %}" style="white-space:nowrap;">
+                🍰 Cheesecakes
+            </a>
+            <a href="{% url 'cakes' %}?category=Fruit{% if search_query %}&q={{ search_query }}{% endif %}" 
+               class="btn btn-sm {% if current_category == 'Fruit' %}btn-primary{% else %}btn-soft{% endif %}" style="white-space:nowrap;">
+                🍓 Fresh Berries
+            </a>
+            <a href="{% url 'cakes' %}?category=Exotic{% if search_query %}&q={{ search_query }}{% endif %}" 
+               class="btn btn-sm {% if current_category == 'Exotic' %}btn-primary{% else %}btn-soft{% endif %}" style="white-space:nowrap;">
+                ✨ Signature
+            </a>
+            <a href="{% url 'cakes' %}?category=Pastry{% if search_query %}&q={{ search_query }}{% endif %}" 
+               class="btn btn-sm {% if current_category == 'Pastry' %}btn-primary{% else %}btn-soft{% endif %}" style="white-space:nowrap;">
+                🥐 Pastries
+            </a>
+            <a href="{% url 'cakes' %}?eggless=1{% if search_query %}&q={{ search_query }}{% endif %}" 
+               class="btn btn-sm {% if eggless_only %}btn-eggless-active{% else %}btn-soft btn-eggless-inactive{% endif %}" style="white-space:nowrap;">
+                🌱 Pure Veg
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <form method="get" action="{% url 'cakes' %}" style="position:relative; width:100%; max-width:320px; flex:1; min-width:200px;">
+            <input type="text" name="q" value="{{ search_query }}" placeholder="Search flavors..." class="form-input-clean" style="margin-bottom:0; padding:10px 18px 10px 38px; border-radius:var(--radius-pill); font-size:0.88rem; width:100%;">
+            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--color-cocoa-light); font-size:0.9rem;">🔍</span>
+            {% if current_category and current_category != 'All' %}
+                <input type="hidden" name="category" value="{{ current_category }}">
+            {% endif %}
+            {% if eggless_only %}
+                <input type="hidden" name="eggless" value="1">
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Image-First Product Grid -->
+    <div class="products-editorial-grid">
+        {% for cake in cakes %}
+        <div class="boutique-card">
+            <div class="boutique-card-media">
+                {% if cake.badge %}
+                    <span class="card-tag">{{ cake.badge }}</span>
+                {% endif %}
+
+                <div class="card-diet-dot" title="{% if cake.is_eggless %}100% Eggless (Vegetarian){% else %}Contains Egg{% endif %}">
+                    <span class="dot-indicator {% if cake.is_eggless %}veg{% else %}nonveg{% endif %}"></span>
+                </div>
+
+                <a href="{% url 'cake_detail' cake.id %}">
+                    <img src="{{ cake.image_url }}" alt="{{ cake.name }}" loading="lazy">
+                </a>
+
+                <!-- Hover Quick Add Overlay -->
+                {% if cake.available %}
+                <div class="quick-add-overlay">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_to_cart' cake.id %}" class="ajax-add-cart-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="weight" value="1 kg">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn-primary btn-block btn-sm" style="background:#FFFFFF; color:var(--color-cocoa-dark); box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                            <span>+ Quick Add to Cart</span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'login' %}?next={% url 'cake_detail' cake.id %}" class="btn btn-primary btn-block btn-sm" style="background:#FFFFFF; color:var(--color-cocoa-dark); box-shadow:0 4px 12px rgba(0,0,0,0.15); text-align:center;">
+                        <span>🔒 Sign In to Order</span>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="boutique-card-info">
+                <div class="boutique-card-meta">
+                    <span>{{ cake.category }}</span>
+                    <span>★ {{ cake.rating }}</span>
+                </div>
+
+                <a href="{% url 'cake_detail' cake.id %}">
+                    <h3 class="boutique-card-title">{{ cake.name }}</h3>
+                </a>
+
+                <p class="boutique-card-desc">{{ cake.description }}</p>
+
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:6px;">
+                    <div style="display:flex; align-items:baseline; gap:8px;">
+                        <span class="boutique-card-price">₹{{ cake.price }}</span>
+                        {% if cake.original_price %}
+                            <span style="font-size:0.85rem; color:var(--color-cocoa-light); text-decoration:line-through;">₹{{ cake.original_price }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'cake_detail' cake.id %}" style="font-size:0.82rem; font-weight:600; color:var(--color-accent-rose); text-decoration:underline;">
+                        Customize
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align:center; padding:70px 20px; background:#FFFFFF; border-radius:var(--radius-xl); border:1px solid var(--color-border);">
+            <div style="font-size:3.5rem; margin-bottom:12px;">🍰</div>
+            {% if search_query or current_category != 'All' or eggless_only %}
+                <h3 style="font-size:1.5rem; margin-bottom:8px;">No cakes match your filters</h3>
+                <p style="color:var(--color-cocoa-muted); margin-bottom:24px;">Try a different category or clear your search.</p>
+                <a href="{% url 'cakes' %}" class="btn btn-primary">Clear Filters</a>
+            {% else %}
+                <h3 style="font-size:1.5rem; margin-bottom:8px;">The menu is being prepared</h3>
+                <p style="color:var(--color-cocoa-muted); margin-bottom:24px;">Our patisserie is preparing freshly baked creations — come back soon or get in touch with our studio.</p>
+                <a href="{% url 'contact' %}" class="btn btn-primary"><span>Contact Studio</span><span>→</span></a>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

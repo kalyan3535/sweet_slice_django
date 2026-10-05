@@ -1,0 +1,86 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Visit Our Atelier — Sweet Slice Patisserie{% endblock %}
+
+{% block content %}
+<div class="container-narrow" style="padding-top:50px; padding-bottom:90px;">
+    <!-- Page Header -->
+    <div style="text-align:center; max-width:600px; margin:0 auto 48px;">
+        <span class="eyebrow">Connect With Us</span>
+        <h1 class="editorial-title" style="font-size:3rem; margin-bottom:12px;">We'd Love to Hear From You</h1>
+        <p style="color:var(--color-cocoa-muted); font-size:1.05rem;">
+            Whether you are planning a grand wedding, ordering a birthday surprise, or inquiring about dietary details, our concierge is here to assist.
+        </p>
+    </div>
+
+    <!-- Contact Split Box -->
+    <div class="contact-split-grid">
+        <!-- Left: Studio Details -->
+        <div>
+            <h3 style="font-size:1.5rem; margin-bottom:20px;">Flagship Atelier</h3>
+
+            <div style="margin-bottom:24px;">
+                <div style="font-size:0.8rem; font-weight:700; color:var(--color-accent-caramel); text-transform:uppercase; margin-bottom:4px;">Studio Address</div>
+                <p style="color:var(--color-cocoa-muted); line-height:1.6;">
+                    Palpara More, NH12<br>
+                    Krishnanagar, Nadia, West Bengal<br>
+                    India
+                </p>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <div style="font-size:0.8rem; font-weight:700; color:var(--color-accent-caramel); text-transform:uppercase; margin-bottom:4px;">Opening Hours</div>
+                <p style="color:var(--color-cocoa-muted); line-height:1.6;">
+                    Monday – Sunday: 8:00 AM – 11:30 PM<br>
+                    Tasting Consultations: 2:00 PM – 7:00 PM
+                </p>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <div style="font-size:0.8rem; font-weight:700; color:var(--color-accent-caramel); text-transform:uppercase; margin-bottom:4px;">Direct Concierge</div>
+                <p style="color:var(--color-cocoa-muted); line-height:1.6;">
+                    📞 +91 98200 12345<br>
+                    ✉️ concierge@sweetslice.com<br>
+                    💬 WhatsApp: +91 98200 12345
+                </p>
+            </div>
+        </div>
+
+        <!-- Right: Inquiry Form -->
+        <div>
+            <h3 style="font-size:1.5rem; margin-bottom:20px;">Send a Message</h3>
+
+            <form method="post" action="{% url 'contact' %}">
+                {% csrf_token %}
+
+                <div>
+                    <label style="font-size:0.84rem; font-weight:700; display:block; margin-bottom:6px;">Your Name *</label>
+                    <input type="text" name="name" class="form-input-clean" placeholder="e.g. Rohini Sen" required>
+                </div>
+
+                <div class="form-split-2">
+                    <div>
+                        <label style="font-size:0.84rem; font-weight:700; display:block; margin-bottom:6px;">Email Address *</label>
+                        <input type="email" name="email" class="form-input-clean" placeholder="rohini@example.com" required>
+                    </div>
+                    <div>
+                        <label style="font-size:0.84rem; font-weight:700; display:block; margin-bottom:6px;">Phone Number *</label>
+                        <input type="tel" name="phone" class="form-input-clean" placeholder="+91 98200 00000" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size:0.84rem; font-weight:700; display:block; margin-bottom:6px;">How can we sweeten your day? *</label>
+                    <textarea name="message" rows="4" class="form-input-clean" placeholder="Tell us about your celebration date, guest count, or questions..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Send Inquiry</span>
+                    <span>→</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

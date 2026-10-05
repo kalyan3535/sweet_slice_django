@@ -1,0 +1,1009 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Razorpay Secure Checkout — Sweet Slice Patisserie{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── Dedicated Razorpay Payment Gateway Page ────────────── */
+    :root {
+        --rzp-primary: #0b72e7;
+        --rzp-primary-hover: #085ec7;
+        --rzp-navy-dark: #0a1128;
+        --rzp-navy-card: #0f1c3f;
+        --rzp-surface: #ffffff;
+        --rzp-bg: #f5f7fa;
+        --rzp-border: #e2e8f0;
+        --rzp-border-subtle: #edf2f7;
+        --rzp-text-dark: #1a202c;
+        --rzp-text-muted: #718096;
+        --rzp-text-light: #a0aec0;
+        --rzp-green: #10b981;
+        --rzp-green-bg: #ecfdf5;
+    }
+
+    .payment-portal-wrapper {
+        padding: 40px 0 90px;
+        background: #fbf9f6;
+        min-height: calc(100vh - 200px);
+    }
+
+    /* Razorpay Top Banner */
+    .rzp-top-strip {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #FFFFFF;
+        border: 1px solid var(--rzp-border);
+        border-radius: var(--radius-lg, 18px);
+        padding: 16px 24px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .rzp-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--color-cocoa-muted);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .rzp-back-link:hover {
+        color: var(--color-cocoa-dark);
+    }
+    .rzp-trust-shield {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #0b72e7;
+        background: #ebf5ff;
+        padding: 6px 14px;
+        border-radius: var(--radius-pill);
+    }
+
+    /* Split Gateway Architecture */
+    .gateway-split-layout {
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
+        gap: 32px;
+        align-items: flex-start;
+    }
+
+    /* Left Panel: Merchant & Order Summary */
+    .merchant-summary-card {
+        background: #FFFFFF;
+        border: 1px solid var(--rzp-border);
+        border-radius: var(--radius-xl, 24px);
+        padding: 32px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    }
+    .merchant-header-badge {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--rzp-border-subtle);
+    }
+    .merchant-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        background: var(--color-cocoa-dark);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(34,22,20,0.15);
+    }
+    .verified-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #059669;
+        background: #ecfdf5;
+        padding: 3px 8px;
+        border-radius: var(--radius-pill);
+    }
+
+    .rzp-amount-due-box {
+        background: linear-gradient(135deg, #FAF7F2 0%, #F5EFEB 100%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg, 18px);
+        padding: 20px 22px;
+        margin-bottom: 24px;
+    }
+    .rzp-amount-label {
+        font-size: 0.8rem;
+        color: var(--color-cocoa-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .rzp-amount-value {
+        font-family: var(--font-serif);
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--color-cocoa-dark);
+        line-height: 1.1;
+        margin-top: 4px;
+    }
+
+    .countdown-timer-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #FFFBEB;
+        border: 1px solid #FDE68A;
+        border-radius: var(--radius-md);
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        color: #92400E;
+        font-weight: 600;
+        margin-bottom: 24px;
+    }
+
+    .delivery-info-chip {
+        background: #FAF7F2;
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+        font-size: 0.84rem;
+        margin-bottom: 20px;
+    }
+
+    /* Right Panel: Razorpay Interactive Terminal */
+    .rzp-terminal-card {
+        background: #FFFFFF;
+        border: 1px solid var(--rzp-border);
+        border-radius: var(--radius-xl, 24px);
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+    }
+    .rzp-terminal-header {
+        background: linear-gradient(135deg, #0A1128 0%, #15224A 100%);
+        color: #FFFFFF;
+        padding: 22px 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .rzp-terminal-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .rzp-badge-demo {
+        background: rgba(255,255,255,0.16);
+        color: #93C5FD;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: var(--radius-pill);
+        letter-spacing: 0.05em;
+    }
+
+    /* Tab Switcher */
+    .rzp-tab-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        background: #F8FAFC;
+        border-bottom: 1px solid var(--rzp-border);
+    }
+    .rzp-nav-tab {
+        padding: 15px 12px;
+        text-align: center;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--rzp-text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    .rzp-nav-tab:hover {
+        color: var(--rzp-primary);
+        background: #FFFFFF;
+    }
+    .rzp-nav-tab.active {
+        color: var(--rzp-primary);
+        background: #FFFFFF;
+        border-bottom-color: var(--rzp-primary);
+        font-weight: 700;
+    }
+    .rzp-tab-icon {
+        font-size: 1.15rem;
+    }
+
+    /* Tab Contents */
+    .rzp-tab-body {
+        padding: 32px 30px;
+    }
+    .tab-pane {
+        display: none;
+        animation: fadeIn 0.22s ease;
+    }
+    .tab-pane.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* UPI Apps Grid */
+    .upi-apps-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    .upi-app-card {
+        border: 1.5px solid var(--rzp-border);
+        border-radius: var(--radius-md);
+        padding: 14px 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #FFFFFF;
+    }
+    .upi-app-card:hover {
+        border-color: var(--rzp-primary);
+        background: #F8FAFC;
+        transform: translateY(-2px);
+    }
+    .upi-app-card.selected {
+        border-color: var(--rzp-primary);
+        background: #EFF6FF;
+        box-shadow: 0 0 0 2px rgba(11,114,231,0.2);
+    }
+    .upi-app-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        margin: 0 auto 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .upi-app-name {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--rzp-text-dark);
+    }
+
+    /* QR Code Container */
+    .upi-qr-box {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: #FAF7F2;
+        border: 1px dashed var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 18px 20px;
+        margin-bottom: 24px;
+    }
+    .qr-visual-frame {
+        width: 100px;
+        height: 100px;
+        background: #FFFFFF;
+        border: 2px solid var(--color-cocoa-dark);
+        border-radius: 12px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    /* Credit Card Live Visual */
+    .card-visual-wrapper {
+        background: linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%);
+        color: #FFFFFF;
+        border-radius: var(--radius-lg, 18px);
+        padding: 24px 26px;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 25px rgba(30, 27, 75, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+    .card-visual-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        top: -60px;
+        right: -40px;
+    }
+    .card-chip {
+        width: 38px;
+        height: 28px;
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .card-number-display {
+        font-family: monospace;
+        font-size: 1.35rem;
+        letter-spacing: 0.18em;
+        margin-bottom: 18px;
+    }
+    .card-bottom-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    /* Bank Selector Grid */
+    .banks-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .bank-card {
+        border: 1.5px solid var(--rzp-border);
+        border-radius: var(--radius-md);
+        padding: 14px 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #FFFFFF;
+    }
+    .bank-card:hover {
+        border-color: var(--rzp-primary);
+        background: #F8FAFC;
+    }
+    .bank-card.selected {
+        border-color: var(--rzp-primary);
+        background: #EFF6FF;
+        box-shadow: 0 0 0 2px rgba(11,114,231,0.2);
+    }
+
+    /* Pay CTA */
+    .btn-rzp-pay {
+        background: #0B72E7;
+        color: #FFFFFF;
+        width: 100%;
+        padding: 16px 24px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        border-radius: var(--radius-pill);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 16px rgba(11,114,231,0.3);
+        transition: all 0.2s;
+    }
+    .btn-rzp-pay:hover {
+        background: #085EC7;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(11,114,231,0.4);
+    }
+    .btn-rzp-pay:active {
+        transform: translateY(0);
+    }
+
+    /* Simulated Processing Modal Overlay */
+    .processing-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 17, 40, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .processing-overlay.is-active {
+        display: flex;
+    }
+    .processing-box {
+        background: #FFFFFF;
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    .rzp-spinner {
+        width: 56px;
+        height: 56px;
+        border: 4px solid #E2E8F0;
+        border-top-color: #0B72E7;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 900px) {
+        .gateway-split-layout {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        .rzp-tab-bar {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .banks-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 560px) {
+        .payment-portal-wrapper {
+            padding: 20px 0 60px;
+        }
+        .merchant-summary-card {
+            padding: 20px 16px;
+            border-radius: var(--radius-lg, 18px);
+        }
+        .rzp-terminal-card {
+            border-radius: var(--radius-lg, 18px);
+        }
+        .rzp-terminal-header {
+            padding: 16px 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .rzp-tab-body {
+            padding: 20px 16px;
+        }
+        .upi-qr-box {
+            flex-direction: column;
+            text-align: center;
+            gap: 14px;
+            align-items: center;
+        }
+        .card-visual-wrapper {
+            padding: 18px 16px;
+        }
+        .card-number-display {
+            font-size: 1.05rem;
+            letter-spacing: 0.12em;
+        }
+        .rzp-top-strip {
+            padding: 14px 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-portal-wrapper">
+    <div class="container">
+        <!-- Top Navigation Strip -->
+        <div class="rzp-top-strip">
+            <a href="{% url 'checkout' %}" class="rzp-back-link">
+                <span>←</span>
+                <span>Return to Delivery Details</span>
+            </a>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div class="rzp-trust-shield">
+                    <span>⚡</span>
+                    <span>Razorpay Secure Verified Merchant</span>
+                </div>
+                <div style="font-size:0.78rem; color:var(--rzp-text-muted);">
+                    🔒 256-Bit SSL Bank Grade Encryption
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Gateway Split Layout -->
+        <div class="gateway-split-layout">
+            <!-- Left: Order Context, Merchant, & Trust -->
+            <div class="merchant-summary-card">
+                <!-- Merchant Header -->
+                <div class="merchant-header-badge">
+                    <div class="merchant-avatar">🍰</div>
+                    <div>
+                        <div class="verified-pill">
+                            <span>✓</span>
+                            <span>Verified Patisserie Business</span>
+                        </div>
+                        <h2 style="font-size:1.35rem; font-family:var(--font-serif); font-weight:700; margin:4px 0 2px; color:var(--color-cocoa-dark);">
+                            Sweet Slice Patisserie
+                        </h2>
+                        <div style="font-size:0.8rem; color:var(--color-cocoa-muted);">Atelier Flagship • Nadia, West Bengal</div>
+                    </div>
+                </div>
+
+                <!-- Total Amount Due -->
+                <div class="rzp-amount-due-box">
+                    <div class="rzp-amount-label">Total Payable Amount</div>
+                    <div class="rzp-amount-value">₹{{ cart_info.total }}</div>
+                    <div style="font-size:0.78rem; color:var(--color-success); font-weight:600; margin-top:4px;">
+                        ✓ Inclusive of all luxury taxes &amp; chilled packaging
+                    </div>
+                </div>
+
+                <!-- Live Countdown Timer -->
+                <div class="countdown-timer-box">
+                    <span>⏱️ Session Valid For:</span>
+                    <strong id="sessionCountdown" style="font-family:monospace; font-size:0.95rem;">14:59</strong>
+                </div>
+
+                <!-- Delivery Destination Recipient Chip -->
+                <div class="delivery-info-chip">
+                    <div style="font-size:0.74rem; font-weight:700; text-transform:uppercase; color:var(--color-accent-caramel); margin-bottom:4px;">
+                        Dispatch Destination
+                    </div>
+                    <strong style="color:var(--color-cocoa-dark); display:block;">{{ checkout_data.name }}</strong>
+                    <div style="color:var(--color-cocoa-muted); font-size:0.8rem;">📞 {{ checkout_data.phone }}</div>
+                    <div style="color:var(--color-cocoa-muted); font-size:0.78rem; margin-top:4px;">
+                        📅 {{ checkout_data.delivery_date }} • {{ checkout_data.delivery_slot }}
+                    </div>
+                    <div style="color:var(--color-cocoa-muted); font-size:0.76rem; margin-top:2px;">
+                        📍 {{ checkout_data.address|truncatechars:65 }}
+                    </div>
+                </div>
+
+                <!-- Items Preview Accordion -->
+                <div style="border-top:1px solid var(--rzp-border-subtle); padding-top:18px; margin-top:18px;">
+                    <div style="font-size:0.82rem; font-weight:700; color:var(--color-cocoa-dark); margin-bottom:12px;">
+                        Order Items ({{ cart_info.count }})
+                    </div>
+                    {% for item in cart_info.items %}
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.82rem;">
+                        <span style="color:var(--color-cocoa-dark);">{{ item.cake.name }} ({{ item.weight }}) × {{ item.quantity }}</span>
+                        <strong style="color:var(--color-cocoa-dark);">₹{{ item.subtotal }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Security Guarantees -->
+                <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--rzp-border-subtle); display:flex; justify-content:space-between; font-size:0.75rem; color:var(--rzp-text-muted);">
+                    <span>🛡️ PCI-DSS Level 1</span>
+                    <span>•</span>
+                    <span>RBI 2FA Compliant</span>
+                    <span>•</span>
+                    <span>100% Refundable</span>
+                </div>
+            </div>
+
+            <!-- Right: Razorpay Interactive Terminal -->
+            <div class="rzp-terminal-card">
+                <!-- Terminal Header -->
+                <div class="rzp-terminal-header">
+                    <div class="rzp-terminal-title">
+                        <span>⚡</span>
+                        <span>Razorpay Instant Checkout</span>
+                    </div>
+                    <span class="rzp-badge-demo">SANDBOX DEMO</span>
+                </div>
+
+                <!-- Tab Navigation Strip -->
+                <div class="rzp-tab-bar">
+                    <button type="button" class="rzp-nav-tab active" data-tab="upi" onclick="switchGatewayTab('upi')">
+                        <span class="rzp-tab-icon">⚡</span>
+                        <span>UPI &amp; QR</span>
+                    </button>
+                    <button type="button" class="rzp-nav-tab" data-tab="card" onclick="switchGatewayTab('card')">
+                        <span class="rzp-tab-icon">💳</span>
+                        <span>Cards</span>
+                    </button>
+                    <button type="button" class="rzp-nav-tab" data-tab="netbanking" onclick="switchGatewayTab('netbanking')">
+                        <span class="rzp-tab-icon">🏛️</span>
+                        <span>Netbanking</span>
+                    </button>
+                    <button type="button" class="rzp-nav-tab" data-tab="wallets" onclick="switchGatewayTab('wallets')">
+                        <span class="rzp-tab-icon">👛</span>
+                        <span>Wallets</span>
+                    </button>
+                </div>
+
+                <!-- Tab Panes -->
+                <div class="rzp-tab-body">
+                    <!-- Form for posting back to process_razorpay_payment -->
+                    <form id="rzpPaymentForm" method="post" action="{% url 'process_razorpay_payment' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="name" value="{{ checkout_data.name }}">
+                        <input type="hidden" name="phone" value="{{ checkout_data.phone }}">
+                        <input type="hidden" name="email" value="{{ checkout_data.email }}">
+                        <input type="hidden" name="address" value="{{ checkout_data.address }}">
+                        <input type="hidden" name="delivery_date" value="{{ checkout_data.delivery_date }}">
+                        <input type="hidden" name="delivery_slot" value="{{ checkout_data.delivery_slot }}">
+                        <input type="hidden" name="cake_message" value="{{ checkout_data.cake_message }}">
+                        <input type="hidden" name="payment_method" id="formPaymentMethod" value="Razorpay (UPI)">
+                        <input type="hidden" name="razorpay_payment_id" id="formRzpPaymentId" value="">
+
+                        <!-- TAB 1: UPI APPS & QR -->
+                        <div id="tab-upi" class="tab-pane active">
+                            <!-- Dynamic QR Code Box -->
+                            <div class="upi-qr-box">
+                                <div class="qr-visual-frame">
+                                    <svg viewBox="0 0 100 100" width="84" height="84" fill="#1A1A1A">
+                                        <!-- Realistic Scalable QR Code Pattern -->
+                                        <rect x="0" y="0" width="30" height="30" fill="#1A1A1A"/>
+                                        <rect x="5" y="5" width="20" height="20" fill="#FFFFFF"/>
+                                        <rect x="10" y="10" width="10" height="10" fill="#0B72E7"/>
+
+                                        <rect x="70" y="0" width="30" height="30" fill="#1A1A1A"/>
+                                        <rect x="75" y="5" width="20" height="20" fill="#FFFFFF"/>
+                                        <rect x="80" y="10" width="10" height="10" fill="#0B72E7"/>
+
+                                        <rect x="0" y="70" width="30" height="30" fill="#1A1A1A"/>
+                                        <rect x="5" y="75" width="20" height="20" fill="#FFFFFF"/>
+                                        <rect x="10" y="80" width="10" height="10" fill="#0B72E7"/>
+
+                                        <rect x="36" y="8" width="8" height="8"/>
+                                        <rect x="50" y="8" width="8" height="8"/>
+                                        <rect x="36" y="24" width="16" height="8"/>
+                                        <rect x="8" y="38" width="8" height="16"/>
+                                        <rect x="22" y="44" width="14" height="8"/>
+                                        <rect x="42" y="40" width="16" height="16" fill="#0B72E7"/>
+                                        <rect x="66" y="38" width="10" height="8"/>
+                                        <rect x="82" y="42" width="10" height="14"/>
+                                        <rect x="38" y="66" width="12" height="10"/>
+                                        <rect x="56" y="68" width="8" height="20"/>
+                                        <rect x="72" y="72" width="18" height="8"/>
+                                        <rect x="70" y="86" width="12" height="8"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.92rem; font-weight:700; color:var(--color-cocoa-dark); margin-bottom:2px;">
+                                        Scan QR Code with any UPI App
+                                    </div>
+                                    <div style="font-size:0.78rem; color:var(--color-cocoa-muted); line-height:1.4;">
+                                        Point your phone camera using Google Pay, PhonePe, Paytm, CRED, or BHIM.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="font-size:0.82rem; font-weight:700; color:var(--rzp-text-dark); margin-bottom:12px;">
+                                Or Select Installed UPI App:
+                            </div>
+
+                            <div class="upi-apps-row">
+                                <div class="upi-app-card selected" onclick="selectUpiApp(this, 'Google Pay', 'patron@okaxis')">
+                                    <div class="upi-app-icon" style="background:#E8F0FE; color:#1A73E8;">🟢</div>
+                                    <div class="upi-app-name">Google Pay</div>
+                                </div>
+                                <div class="upi-app-card" onclick="selectUpiApp(this, 'PhonePe', 'patron@ybl')">
+                                    <div class="upi-app-icon" style="background:#F3E8FF; color:#7E22CE;">🟣</div>
+                                    <div class="upi-app-name">PhonePe</div>
+                                </div>
+                                <div class="upi-app-card" onclick="selectUpiApp(this, 'Paytm', 'patron@paytm')">
+                                    <div class="upi-app-icon" style="background:#E0F2FE; color:#0284C7;">🔵</div>
+                                    <div class="upi-app-name">Paytm UPI</div>
+                                </div>
+                                <div class="upi-app-card" onclick="selectUpiApp(this, 'CRED UPI', 'patron@cred')">
+                                    <div class="upi-app-icon" style="background:#F1F5F9; color:#0F172A;">⚡</div>
+                                    <div class="upi-app-name">CRED / BHIM</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:28px;">
+                                <label for="vpaInput" style="font-size:0.8rem; font-weight:700; color:var(--rzp-text-dark); display:block; margin-bottom:6px;">
+                                    UPI ID / VPA
+                                </label>
+                                <div style="display:flex; gap:10px;">
+                                    <input type="text" id="vpaInput" class="form-input-clean" value="patron@okaxis" 
+                                           style="margin-bottom:0; font-family:monospace; font-size:0.92rem;" placeholder="username@bank">
+                                    <button type="button" class="btn btn-soft" style="padding:0 18px; font-size:0.82rem; white-space:nowrap;" onclick="verifyVpa()">
+                                        ✓ Verify
+                                    </button>
+                                </div>
+                                <div id="vpaStatus" style="font-size:0.75rem; color:var(--color-success); font-weight:600; margin-top:4px;">
+                                    ✓ Verified Indian Banking Handle
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: CREDIT / DEBIT CARDS -->
+                        <div id="tab-card" class="tab-pane">
+                            <!-- Interactive Card Mockup -->
+                            <div class="card-visual-wrapper">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                    <div class="card-chip"></div>
+                                    <span id="cardBrandLogo" style="font-weight:800; font-size:1.1rem; letter-spacing:0.05em;">VISA</span>
+                                </div>
+                                <div class="card-number-display" id="cardMockNumber">4111 •••• •••• 4444</div>
+                                <div class="card-bottom-row">
+                                    <div>
+                                        <div style="font-size:0.68rem; opacity:0.7; text-transform:uppercase;">Cardholder</div>
+                                        <div style="font-weight:700; font-size:0.92rem; text-transform:uppercase;" id="cardMockHolder">
+                                            {{ checkout_data.name|default:"Aryan Kapoor" }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:0.68rem; opacity:0.7; text-transform:uppercase;">Expires</div>
+                                        <div style="font-weight:700; font-size:0.92rem;" id="cardMockExpiry">12/28</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="field-label">Card Number *</label>
+                                <input type="text" class="form-input-clean" id="cardInputNumber" value="4111 2222 3333 4444" 
+                                       placeholder="16-digit card number" maxlength="19" onkeyup="updateCardVisual(this)">
+                            </div>
+
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                                <div>
+                                    <label class="field-label">Expiry Date *</label>
+                                    <input type="text" class="form-input-clean" id="cardInputExpiry" value="12/28" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div>
+                                    <label class="field-label">CVV / CVC *</label>
+                                    <input type="password" class="form-input-clean" value="888" placeholder="3 Digits" maxlength="4">
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:28px;">
+                                <label class="field-label">Name on Card *</label>
+                                <input type="text" class="form-input-clean" id="cardInputName" 
+                                       value="{{ checkout_data.name|default:'Aryan Kapoor' }}" placeholder="Full Name as printed on card">
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: NETBANKING -->
+                        <div id="tab-netbanking" class="tab-pane">
+                            <div style="font-size:0.84rem; font-weight:700; color:var(--rzp-text-dark); margin-bottom:14px;">
+                                Popular Indian Scheduled Banks:
+                            </div>
+
+                            <div class="banks-grid">
+                                <div class="bank-card selected" onclick="selectBank(this, 'HDFC Bank')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">🏦</div>
+                                    <strong style="font-size:0.8rem; display:block;">HDFC Bank</strong>
+                                </div>
+                                <div class="bank-card" onclick="selectBank(this, 'ICICI Bank')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">🏛️</div>
+                                    <strong style="font-size:0.8rem; display:block;">ICICI Bank</strong>
+                                </div>
+                                <div class="bank-card" onclick="selectBank(this, 'State Bank of India')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">🏢</div>
+                                    <strong style="font-size:0.8rem; display:block;">SBI</strong>
+                                </div>
+                                <div class="bank-card" onclick="selectBank(this, 'Axis Bank')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">🏛️</div>
+                                    <strong style="font-size:0.8rem; display:block;">Axis Bank</strong>
+                                </div>
+                                <div class="bank-card" onclick="selectBank(this, 'Kotak Mahindra Bank')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">🏦</div>
+                                    <strong style="font-size:0.8rem; display:block;">Kotak</strong>
+                                </div>
+                                <div class="bank-card" onclick="selectBank(this, 'Punjab National Bank')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">🏢</div>
+                                    <strong style="font-size:0.8rem; display:block;">PNB</strong>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:28px;">
+                                <label class="field-label">Or Select from All Other Banks</label>
+                                <select class="form-input-clean" id="allBanksSelect" onchange="selectOtherBank(this)">
+                                    <option value="">-- Choose from 50+ Other Banks --</option>
+                                    <option value="Bank of Baroda">Bank of Baroda</option>
+                                    <option value="Canara Bank">Canara Bank</option>
+                                    <option value="IndusInd Bank">IndusInd Bank</option>
+                                    <option value="Yes Bank">Yes Bank</option>
+                                    <option value="Union Bank of India">Union Bank of India</option>
+                                    <option value="IDFC First Bank">IDFC First Bank</option>
+                                    <option value="Federal Bank">Federal Bank</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: WALLETS -->
+                        <div id="tab-wallets" class="tab-pane">
+                            <div style="font-size:0.84rem; font-weight:700; color:var(--rzp-text-dark); margin-bottom:14px;">
+                                Select Digital Wallet:
+                            </div>
+
+                            <div class="banks-grid">
+                                <div class="bank-card selected" onclick="selectWallet(this, 'Amazon Pay')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">📦</div>
+                                    <strong style="font-size:0.8rem; display:block;">Amazon Pay</strong>
+                                </div>
+                                <div class="bank-card" onclick="selectWallet(this, 'Paytm Wallet')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">👛</div>
+                                    <strong style="font-size:0.8rem; display:block;">Paytm Wallet</strong>
+                                </div>
+                                <div class="bank-card" onclick="selectWallet(this, 'PhonePe Wallet')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">🟣</div>
+                                    <strong style="font-size:0.8rem; display:block;">PhonePe</strong>
+                                </div>
+                                <div class="bank-card" onclick="selectWallet(this, 'MobiKwik')">
+                                    <div style="font-size:1.4rem; margin-bottom:4px;">⚡</div>
+                                    <strong style="font-size:0.8rem; display:block;">MobiKwik</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Big Action Button -->
+                        <button type="button" class="btn-rzp-pay" id="btnRazorpayExecute" onclick="triggerRazorpaySimulation()">
+                            <span>🔒</span>
+                            <span id="btnPayAmountText">Pay ₹{{ cart_info.total }} via Razorpay</span>
+                            <span>→</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================================
+     SIMULATED RAZORPAY MODAL OVERLAY (BANK REDIRECT & OTP SIMULATION)
+     ============================================================== -->
+<div class="processing-overlay" id="rzpProcessingModal">
+    <div class="processing-box">
+        <div class="rzp-spinner" id="processingSpinner"></div>
+        <div style="font-size:1.5rem; margin-bottom:8px;" id="processingStatusIcon">🔒</div>
+        <h3 style="font-size:1.35rem; font-weight:700; color:var(--rzp-text-dark); margin-bottom:8px;" id="processingTitle">
+            Contacting Banking Gateway...
+        </h3>
+        <p style="font-size:0.88rem; color:var(--rzp-text-muted); line-height:1.5; margin-bottom:18px;" id="processingDesc">
+            Establishing 256-bit encrypted handshake with Razorpay payment network. Please do not refresh.
+        </p>
+        <div style="background:#F1F5F9; border-radius:var(--radius-pill); height:6px; overflow:hidden; position:relative;">
+            <div id="processingProgressBar" style="width:25%; height:100%; background:#0B72E7; transition:width 0.4s ease;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeMethod = 'UPI';
+
+    // Switch Tabs
+    function switchGatewayTab(tabKey) {
+        document.querySelectorAll('.rzp-nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+        const targetBtn = document.querySelector(`.rzp-nav-tab[data-tab='${tabKey}']`);
+        const targetPane = document.getElementById(`tab-${tabKey}`);
+
+        if (targetBtn) targetBtn.classList.add('active');
+        if (targetPane) targetPane.classList.add('active');
+
+        activeMethod = tabKey.toUpperCase();
+        document.getElementById('formPaymentMethod').value = `Razorpay (${activeMethod})`;
+    }
+
+    // UPI App Selection
+    function selectUpiApp(el, appName, handle) {
+        document.querySelectorAll('.upi-app-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('vpaInput').value = handle;
+        document.getElementById('formPaymentMethod').value = `Razorpay (UPI - ${appName})`;
+        document.getElementById('vpaStatus').textContent = `✓ Selected ${appName} App (${handle})`;
+    }
+
+    function verifyVpa() {
+        const val = document.getElementById('vpaInput').value.trim();
+        const status = document.getElementById('vpaStatus');
+        if (val.includes('@')) {
+            status.style.color = 'var(--color-success)';
+            status.textContent = `✓ ${val} is verified and ready for payment`;
+        } else {
+            status.style.color = '#DC2626';
+            status.textContent = `✕ Please enter a valid UPI handle (e.g. name@bank)`;
+        }
+    }
+
+    // Card Live Update
+    function updateCardVisual(input) {
+        let val = input.value.replace(/\D/g, '').substring(0, 16);
+        let formatted = '';
+        for (let i = 0; i < val.length; i++) {
+            if (i > 0 && i % 4 === 0) formatted += ' ';
+            formatted += val[i];
+        }
+        input.value = formatted;
+        document.getElementById('cardMockNumber').textContent = formatted || '•••• •••• •••• ••••';
+
+        const logo = document.getElementById('cardBrandLogo');
+        if (val.startsWith('4')) logo.textContent = 'VISA';
+        else if (val.startsWith('5')) logo.textContent = 'MASTERCARD';
+        else if (val.startsWith('6')) logo.textContent = 'RUPAY';
+        else logo.textContent = 'CARD';
+    }
+
+    // Netbanking Selection
+    function selectBank(el, bankName) {
+        document.querySelectorAll('.bank-card').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('allBanksSelect').value = '';
+        document.getElementById('formPaymentMethod').value = `Razorpay (Netbanking - ${bankName})`;
+    }
+
+    function selectOtherBank(select) {
+        if (select.value) {
+            document.querySelectorAll('.bank-card').forEach(b => b.classList.remove('selected'));
+            document.getElementById('formPaymentMethod').value = `Razorpay (Netbanking - ${select.value})`;
+        }
+    }
+
+    // Wallet Selection
+    function selectWallet(el, walletName) {
+        document.querySelectorAll('.bank-card').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('formPaymentMethod').value = `Razorpay (Wallet - ${walletName})`;
+    }
+
+    // Countdown Timer (15 Minutes)
+    let timeLeft = 14 * 60 + 59;
+    const countdownEl = document.getElementById('sessionCountdown');
+    setInterval(function() {
+        if (timeLeft <= 0) {
+            countdownEl.textContent = "00:00";
+            return;
+        }
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        countdownEl.textContent = `${m}:${s}`;
+    }, 1000);
+
+    // Razorpay Execution Simulation
+    function triggerRazorpaySimulation() {
+        const modal = document.getElementById('rzpProcessingModal');
+        const title = document.getElementById('processingTitle');
+        const desc = document.getElementById('processingDesc');
+        const bar = document.getElementById('processingProgressBar');
+        const icon = document.getElementById('processingStatusIcon');
+        const spinner = document.getElementById('processingSpinner');
+
+        modal.classList.add('is-active');
+
+        // Step 1: Connecting
+        title.textContent = "Contacting Razorpay Gateway...";
+        desc.textContent = "Negotiating encrypted handshake with banking network...";
+        bar.style.width = "40%";
+
+        setTimeout(function() {
+            // Step 2: 2FA Authentication
+            title.textContent = "Verifying 2FA & Bank Approval...";
+            desc.textContent = "Simulating bank biometric/OTP verification token...";
+            bar.style.width = "75%";
+        }, 700);
+
+        setTimeout(function() {
+            // Step 3: Success
+            spinner.style.display = "none";
+            icon.textContent = "🎉";
+            title.textContent = "Payment Verified & Approved!";
+            desc.textContent = "Creating your Sweet Slice bakery order receipt...";
+            bar.style.width = "100%";
+            bar.style.background = "#10B981";
+
+            const paymentId = "pay_rzp_" + Math.random().toString(36).substring(2, 12).toUpperCase();
+            document.getElementById('formRzpPaymentId').value = paymentId;
+
+            setTimeout(function() {
+                document.getElementById('rzpPaymentForm').submit();
+            }, 600);
+        }, 1500);
+    }
+</script>
+{% endblock %}

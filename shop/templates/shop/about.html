@@ -1,0 +1,81 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Our Story & Craftsmanship — Sweet Slice Patisserie{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:50px; padding-bottom:90px;">
+    <!-- Hero Storytelling Header -->
+    <div style="text-align:center; max-width:680px; margin:0 auto 60px;">
+        <span class="eyebrow">The Patisserie Atelier</span>
+        <h1 class="editorial-title" style="font-size:3.2rem; margin-bottom:16px;">
+            Crafted with Patience,<br>
+            <em>Remembered</em> with Love.
+        </h1>
+        <p style="color:var(--color-cocoa-muted); font-size:1.1rem; line-height:1.7;">
+            Sweet Slice began with a simple belief: a celebration cake should be as breathtaking to taste as it is to behold.
+        </p>
+    </div>
+
+    <!-- Editorial Story Split -->
+    <div class="story-grid" style="margin-bottom:80px;">
+        <div class="story-image-wrap">
+            <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&auto=format&fit=crop&q=85" alt="Chef preparing chocolate ganache">
+        </div>
+        <div class="story-content">
+            <span class="eyebrow">Single-Origin Ingredients</span>
+            <h2 style="font-size:2.2rem; font-weight:500; margin-bottom:18px;">No Preservatives. No Shortcuts.</h2>
+            <p style="color:var(--color-cocoa-muted); font-size:1rem; line-height:1.7; margin-bottom:18px;">
+                We refuse to use commercial emulsifiers, pre-mixes, or artificial flavoring compounds. Every genoise sponge is aerated naturally with farm-fresh eggs or pure yogurt, infused with real Madagascar bourbon vanilla beans, and frosted with couverture chocolate containing at least 35% pure cocoa butter.
+            </p>
+            <p style="color:var(--color-cocoa-muted); font-size:1rem; line-height:1.7;">
+                Our fruit compotes are cooked slowly in copper pans using seasonal Alphonso mangoes and wild mountain blueberries, bringing out natural sweetness without cloying sugars.
+            </p>
+        </div>
+    </div>
+
+    <!-- 3 Core Pillars -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:32px; margin-bottom:80px;">
+        <div style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:36px 28px; box-shadow:var(--shadow-subtle);">
+            <div style="font-size:2rem; margin-bottom:14px;">👩‍🍳</div>
+            <h3 style="font-size:1.3rem; margin-bottom:8px;">Bespoke Artistry</h3>
+            <p style="color:var(--color-cocoa-muted); font-size:0.92rem; line-height:1.6;">
+                Every creation is individually designed and hand-piped by our master decorators. No two cakes leave our studio without meeting exacting standards.
+            </p>
+        </div>
+
+        <div style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:36px 28px; box-shadow:var(--shadow-subtle);">
+            <div style="font-size:2rem; margin-bottom:14px;">🌱</div>
+            <h3 style="font-size:1.3rem; margin-bottom:8px;">100% Pure Eggless Atelier</h3>
+            <p style="color:var(--color-cocoa-muted); font-size:0.92rem; line-height:1.6;">
+                We maintain an entirely segregated kitchen line for our eggless recipes, ensuring vegetarian patrons enjoy cloud-soft textures with complete peace of mind.
+            </p>
+        </div>
+
+        <div style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:36px 28px; box-shadow:var(--shadow-subtle);">
+            <div style="font-size:2rem; margin-bottom:14px;">❄️</div>
+            <h3 style="font-size:1.3rem; margin-bottom:8px;">Pristine Cold Transit</h3>
+            <p style="color:var(--color-muted); font-size:0.92rem; line-height:1.6;">
+                Delicate buttercreams and mousses are transported in our temperature-regulated fleet, ensuring your cake arrives just as chilled and flawless as when it left our marble counter.
+            </p>
+        </div>
+    </div>
+
+    <!-- Call to Action Banner -->
+    <div style="background:var(--color-cocoa-dark); color:#FFFFFF; border-radius:var(--radius-xl); padding:50px 40px; text-align:center;">
+        <span class="eyebrow" style="color:var(--color-accent-caramel);">Begin Your Celebration</span>
+        <h2 style="color:#FFFFFF; font-size:2.4rem; margin-bottom:16px;">Taste the Art of True Confectionery</h2>
+        <p style="color:#D4C6C0; font-size:1rem; max-width:500px; margin:0 auto 28px;">
+            Browse our signature collections or reach out to our flagship atelier studio.
+        </p>
+        <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+            <a href="{% url 'cakes' %}" class="btn btn-primary" style="background:#FFFFFF; color:var(--color-cocoa-dark);">
+                <span>Explore All Cakes</span>
+            </a>
+            <a href="{% url 'contact' %}" class="btn btn-secondary" style="border-color:#FFFFFF; color:#FFFFFF;">
+                <span>Visit Our Studio</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

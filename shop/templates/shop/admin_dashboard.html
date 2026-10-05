@@ -1,0 +1,1207 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Bakery Executive Dashboard — Sweet Slice Admin{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── Admin Dashboard Exclusive Theme & Tokens ────────────── */
+    :root {
+        --admin-bg-surface: #ffffff;
+        --admin-border: #e8e0d5;
+        --admin-border-subtle: #f0e9df;
+        --admin-text-dark: #221614;
+        --admin-text-muted: #73635e;
+        --admin-text-light: #a89893;
+        --admin-gold: #b88246;
+        --admin-gold-light: #fbf6ef;
+        --admin-gold-border: #e8dbcc;
+        --admin-rose: #96354b;
+        --admin-rose-light: #fbf0f2;
+        --admin-success: #1e824c;
+        --admin-success-bg: #eaf7ef;
+        --admin-danger: #dc2626;
+        --admin-danger-bg: #fef2f2;
+        --admin-warning: #d97706;
+        --admin-warning-bg: #fffbeb;
+        --admin-info: #2563eb;
+        --admin-info-bg: #eff6ff;
+    }
+
+    /* Admin mode status */
+    .admin-mode-text { color: var(--admin-text-muted); font-weight: 600; }
+    .admin-mode-text.is-active { color: var(--admin-success); font-weight: 700; }
+
+    /* KPI Grid */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 36px;
+    }
+    .kpi-card {
+        background: var(--admin-bg-surface);
+        border: 1px solid var(--admin-border-subtle);
+        border-radius: var(--radius-lg, 20px);
+        padding: 22px 24px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        box-shadow: 0 4px 20px rgba(34, 22, 20, 0.04);
+        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s;
+    }
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(34, 22, 20, 0.08);
+    }
+    .kpi-icon-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    .kpi-val  {
+        font-family: var(--font-serif, Georgia, serif);
+        font-size: 1.65rem;
+        font-weight: 700;
+        color: var(--admin-text-dark);
+        line-height: 1.1;
+    }
+    .kpi-label {
+        font-size: 0.8rem;
+        color: var(--admin-text-muted);
+        font-weight: 600;
+        margin-top: 4px;
+        letter-spacing: 0.01em;
+    }
+
+    /* Dashboard header row */
+    .dashboard-header {
+        border: none;
+        padding: 0 0 28px 0;
+    }
+    .dashboard-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    /* Admin table container & responsive wrapper */
+    .admin-table-container {
+        background: var(--admin-bg-surface);
+        border: 1px solid var(--admin-border-subtle);
+        border-radius: var(--radius-lg, 20px);
+        margin-bottom: 36px;
+        box-shadow: 0 4px 24px rgba(34, 22, 20, 0.04);
+        overflow: hidden;
+    }
+    .admin-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 22px 26px;
+        border-bottom: 1px solid var(--admin-border-subtle);
+        flex-wrap: wrap;
+        gap: 16px;
+        background: #fdfbf8;
+    }
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Data table */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 820px;
+    }
+    .data-table thead th {
+        background: #faf7f2;
+        padding: 13px 18px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--admin-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        text-align: left;
+        border-bottom: 1px solid var(--admin-border-subtle);
+        white-space: nowrap;
+    }
+    .data-table tbody tr {
+        border-bottom: 1px solid var(--admin-border-subtle);
+        transition: background 0.15s ease, opacity 0.3s ease;
+    }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: #fcf9f6; }
+    .data-table tbody td {
+        padding: 15px 18px;
+        font-size: 0.88rem;
+        vertical-align: middle;
+        color: var(--admin-text-dark);
+    }
+
+    /* Dietary indicator dots */
+    .diet-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 6px;
+        background: var(--admin-danger);
+        box-shadow: 0 0 0 2px rgba(220,38,38,0.2);
+    }
+    .diet-dot.is-eggless {
+        background: var(--admin-success);
+        box-shadow: 0 0 0 2px rgba(30,130,76,0.2);
+    }
+
+    /* Stock toggle buttons */
+    .stock-badge-btn {
+        padding: 5px 12px;
+        font-size: 0.78rem;
+        border-radius: var(--radius-pill);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .stock-badge-btn.in-stock {
+        background: #faf7f2;
+        border: 1px solid var(--admin-border);
+        color: var(--admin-success);
+        font-weight: 700;
+    }
+    .stock-badge-btn.out-of-stock {
+        background: var(--admin-text-dark);
+        border: 1px solid var(--admin-text-dark);
+        color: #f87171;
+        font-weight: 700;
+    }
+    .stock-badge-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Form styles for modal inputs */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 18px;
+    }
+    .form-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--admin-text-dark);
+        letter-spacing: 0.01em;
+    }
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 11px 15px;
+        border: 1px solid var(--admin-border);
+        border-radius: var(--radius-md, 12px);
+        background: #faf7f2;
+        color: var(--admin-text-dark);
+        font-family: var(--font-sans, inherit);
+        font-size: 0.92rem;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
+    }
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        background: #ffffff;
+        border-color: var(--admin-text-dark);
+        box-shadow: 0 0 0 3px rgba(34, 22, 20, 0.08);
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    /* Toggle switch label */
+    .toggle-switch-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--admin-text-dark);
+        user-select: none;
+    }
+    .toggle-switch-label input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--admin-rose);
+        cursor: pointer;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 9px;
+        border-radius: var(--radius-pill, 9999px);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+    .status-badge.status-paid { background: var(--admin-success-bg); color: var(--admin-success); }
+    .status-badge.status-pending { background: var(--admin-warning-bg); color: var(--admin-warning); }
+    .status-badge.status-failed { background: var(--admin-danger-bg); color: var(--admin-danger); }
+    .status-badge.status-cod { background: #eff6ff; color: #1d4ed8; }
+
+    /* Customer Quick Actions */
+    .contact-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #fdfbf8;
+        border: 1px solid var(--admin-border-subtle);
+        color: var(--admin-text-dark);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .contact-action-btn:hover {
+        background: var(--admin-text-dark);
+        color: #ffffff;
+        border-color: var(--admin-text-dark);
+    }
+    .contact-action-btn.wa {
+        color: #15803d;
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+    }
+    .contact-action-btn.wa:hover {
+        background: #16a34a;
+        color: #ffffff;
+        border-color: #16a34a;
+    }
+
+    /* Modal backdrop & window */
+    .admin-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(34, 22, 20, 0.65);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .admin-modal-backdrop.is-open {
+        display: flex;
+    }
+    .admin-modal-window {
+        background: #ffffff;
+        border-radius: var(--radius-xl, 28px);
+        padding: 32px 36px;
+        width: 100%;
+        max-width: 620px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 64px rgba(34, 22, 20, 0.22);
+        animation: modalSlideIn 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+        position: relative;
+    }
+    @keyframes modalSlideIn {
+        from { opacity: 0; transform: translateY(24px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Modal Close Button */
+    .modal-close-btn {
+        background: #faf7f2;
+        border: 1px solid var(--admin-border-subtle);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        cursor: pointer;
+        color: var(--admin-text-muted);
+        transition: all 0.2s;
+    }
+    .modal-close-btn:hover {
+        background: var(--admin-text-dark);
+        color: #ffffff;
+        border-color: var(--admin-text-dark);
+    }
+
+    /* Live Toast Feedback for Admin */
+    .admin-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: var(--admin-text-dark);
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: var(--radius-pill);
+        font-size: 0.86rem;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 9999;
+        animation: slideUpToast 0.24s ease;
+    }
+    @keyframes slideUpToast {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+        .form-row { grid-template-columns: 1fr; }
+        .dashboard-title-row { flex-direction: column; }
+        .kpi-grid { grid-template-columns: 1fr 1fr; }
+        .admin-modal-window { padding: 24px 20px; }
+    }
+    @media (max-width: 768px) {
+        .kpi-grid { 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            padding: 16px 14px;
+            gap: 12px;
+            border-radius: var(--radius-md, 14px);
+        }
+        .kpi-val {
+            font-size: 1.35rem;
+        }
+        .kpi-icon-wrap {
+            width: 42px;
+            height: 42px;
+            font-size: 1.25rem;
+        }
+        .dashboard-header {
+            padding-bottom: 20px;
+        }
+        .dashboard-title-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 18px;
+        }
+        .dashboard-title-row h1 {
+            font-size: 1.8rem !important;
+        }
+        .admin-table-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 14px;
+            padding: 18px 16px;
+        }
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .admin-modal-window {
+            padding: 24px 18px;
+            border-radius: var(--radius-lg, 18px);
+            max-width: 95vw;
+        }
+        .admin-modal-backdrop {
+            padding: 12px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .kpi-grid { 
+            grid-template-columns: 1fr; 
+        }
+        .dashboard-title-row .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:36px; padding-bottom:90px;">
+    <!-- Dashboard Top Bar -->
+    <div class="dashboard-header">
+        <div class="dashboard-title-row">
+            <div>
+                <div style="display:inline-flex; align-items:center; gap:8px; background:var(--admin-gold-light); border:1px solid var(--admin-gold-border); padding:6px 14px; border-radius:var(--radius-pill); font-size:0.8rem; font-weight:700; color:var(--admin-gold); margin-bottom:10px;">
+                    <span>👑</span>
+                    <span>Executive Storefront Control Panel</span>
+                </div>
+                <h1 style="font-size:2.4rem; font-weight:700; margin-bottom:6px; font-family:var(--font-serif); color:var(--admin-text-dark);">Bakery Management Dashboard</h1>
+                <p style="color:var(--admin-text-muted); font-size:0.95rem; max-width:680px;">Monitor verified revenue, active kitchen pipelines, live customer orders, and maintain real-time catalog pricing and inventory.</p>
+            </div>
+
+            <!-- Admin Mode Controls -->
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <a href="{% url 'admin_quick_auth' %}" class="btn btn-soft btn-sm" title="Toggle between Admin and Guest preview mode">
+                    <span>Mode:</span>
+                    <strong class="admin-mode-text {% if is_admin %}is-active{% endif %}">
+                        {% if is_admin %}● Admin Active{% else %}○ Guest (Click to Enable){% endif %}
+                    </strong>
+                </a>
+
+                <a href="/admin/" target="_blank" rel="noopener noreferrer" class="btn btn-soft btn-sm" title="Open standard Django Admin backend in new tab">
+                    <span>Django Admin ↗</span>
+                </a>
+
+                <button type="button" class="btn btn-primary" onclick="openAddCakeModal()">
+                    <span>➕ Add New Cake</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics KPIs -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:#ECFDF5; color:#059669;">💰</div>
+            <div>
+                <div class="kpi-val">₹{{ total_sales|floatformat:2 }}</div>
+                <div class="kpi-label">Total Verified Revenue</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:#EFF6FF; color:#2563EB;">📦</div>
+            <div>
+                <div class="kpi-val">{{ total_orders }}</div>
+                <div class="kpi-label">Total Customer Orders</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:#FFFBEB; color:#D97706;">👩‍🍳</div>
+            <div>
+                <div class="kpi-val">{{ active_orders_count }}</div>
+                <div class="kpi-label">Active in Kitchen/Delivery</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:#FDF2F8; color:#DB2777;">🎂</div>
+            <div>
+                <div class="kpi-val">
+                    <span id="kpiAvailCount">{{ available_cakes_count }}</span> / <span id="kpiTotalCount">{{ total_cakes_count }}</span>
+                </div>
+                <div class="kpi-label">Available Menu Flavors</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 1: CAKE CATALOG MANAGEMENT (ADD / EDIT / DELETE / TOGGLE) -->
+    <div class="admin-table-container">
+        <div class="admin-table-header">
+            <div>
+                <h3 style="font-size:1.35rem; font-weight:700; margin-bottom:4px; font-family:var(--font-serif); color:var(--admin-text-dark);">🎂 Cake Catalog &amp; Menu Inventory</h3>
+                <p style="color:var(--admin-text-muted); font-size:0.86rem;">Add, update prices and weights, toggle stock availability, or delete cakes in real time.</p>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <!-- Quick client-side filter -->
+                <input type="text" id="cakeSearchInput" placeholder="Filter cakes by name or category..." 
+                       class="form-input" style="padding:7px 14px; font-size:0.82rem; width:240px; border-radius:var(--radius-pill);"
+                       onkeyup="filterCakesTable()">
+
+                <button type="button" class="btn btn-primary btn-sm" onclick="openAddCakeModal()">
+                    <span>➕ Add New Cake</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive-wrapper">
+            <table class="data-table" id="cakesTable">
+                <thead>
+                    <tr>
+                        <th style="width:70px;">Image</th>
+                        <th>Cake Name &amp; Category</th>
+                        <th>Price (Base)</th>
+                        <th>Original / MRP</th>
+                        <th>Dietary</th>
+                        <th>Badge</th>
+                        <th>Availability</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="cakesTableBody">
+                    {% for cake in cakes %}
+                    <!-- Embedded JSON data for 100% compliant zero-error modal population -->
+                    <tr class="cake-row" id="cakeRow-{{ cake.id }}" data-cake-id="{{ cake.id }}" data-cake-name="{{ cake.name }}" data-cake-category="{{ cake.category }}">
+                        <td>
+                            <script type="application/json" id="cakeData-{{ cake.id }}">
+                            {
+                                "id": {{ cake.id }},
+                                "name": "{{ cake.name|escapejs }}",
+                                "category": "{{ cake.category|escapejs }}",
+                                "price": "{{ cake.price }}",
+                                "original_price": "{% if cake.original_price %}{{ cake.original_price }}{% endif %}",
+                                "image_url": "{{ cake.image_url|escapejs }}",
+                                "badge": "{{ cake.badge|escapejs }}",
+                                "weight_options": "{{ cake.weight_options|escapejs }}",
+                                "description": "{{ cake.description|escapejs }}",
+                                "is_eggless": {{ cake.is_eggless|yesno:"true,false" }},
+                                "available": {{ cake.available|yesno:"true,false" }}
+                            }
+                            </script>
+                            <img src="{{ cake.image_url|default:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100' }}" 
+                                 alt="{{ cake.name }}" 
+                                 onerror="handleImageFallback(this)"
+                                 style="width:52px; height:52px; border-radius:10px; object-fit:cover; border:1px solid var(--admin-border-subtle); display:block;">
+                        </td>
+                        <td>
+                            <strong style="color:var(--admin-text-dark); font-size:0.94rem;">{{ cake.name }}</strong>
+                            <div style="font-size:0.78rem; color:var(--admin-text-muted); margin-top:2px;">Category: {{ cake.category }}</div>
+                        </td>
+                        <td style="font-weight:700; color:var(--admin-text-dark);">₹{{ cake.price }}</td>
+                        <td style="color:var(--admin-text-light); font-size:0.85rem;">
+                            {% if cake.original_price %}₹{{ cake.original_price }}{% else %}—{% endif %}
+                        </td>
+                        <td>
+                            <span class="diet-dot {% if cake.is_eggless %}is-eggless{% endif %}"></span>
+                            <span style="font-size:0.82rem; font-weight:600; color:var(--admin-text-dark);">
+                                {% if cake.is_eggless %}Eggless{% else %}With Egg{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if cake.badge %}
+                                <span style="background:var(--admin-rose-light); color:var(--admin-rose); font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:var(--radius-pill); display:inline-block;">
+                                    {{ cake.badge }}
+                                </span>
+                            {% else %}
+                                <span style="color:var(--admin-text-light); font-size:0.85rem;">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <!-- Real-time AJAX stock toggle button -->
+                            <button type="button" 
+                                    id="toggleBtn-{{ cake.id }}"
+                                    data-cake-id="{{ cake.id }}"
+                                    class="stock-badge-btn {% if cake.available %}in-stock{% else %}out-of-stock{% endif %}"
+                                    title="Click to toggle stock status in real-time"
+                                    onclick="toggleStockAvailability(this)">
+                                {% if cake.available %}
+                                    <span>● In Stock</span>
+                                {% else %}
+                                    <span>○ Out of Stock</span>
+                                {% endif %}
+                            </button>
+                        </td>
+                        <td style="text-align:right; white-space:nowrap;">
+                            <button type="button" class="btn btn-soft btn-sm" style="padding:6px 14px; font-size:0.8rem; margin-right:6px;"
+                                    data-cake-id="{{ cake.id }}"
+                                    onclick="openEditCakeModal(this)">
+                                <span>✏️ Edit</span>
+                            </button>
+                            <button type="button" class="btn btn-sm" style="padding:6px 12px; font-size:0.8rem; background:var(--admin-danger-bg); color:var(--admin-danger); border:1px solid rgba(220,38,38,0.2);"
+                                    data-cake-id="{{ cake.id }}"
+                                    data-cake-name="{{ cake.name }}"
+                                    onclick="confirmDeleteCake(this)">
+                                <span>🗑️ Delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="emptyCakesRow">
+                        <td colspan="8" style="text-align:center; padding:36px; color:var(--admin-text-muted);">No cakes in inventory. Click "➕ Add New Cake" to add one.</td>
+                    </tr>
+                    {% endfor %}
+                    <tr id="noSearchMatchRow" style="display:none;">
+                        <td colspan="8" style="text-align:center; padding:36px; color:var(--admin-text-muted);">
+                            🔍 No cakes match your filter query.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECTION 2: LIVE ORDERS MANAGEMENT & STATUS PIPELINE -->
+    <div class="admin-table-container">
+        <div class="admin-table-header">
+            <div>
+                <h3 style="font-size:1.35rem; font-weight:700; margin-bottom:4px; font-family:var(--font-serif); color:var(--admin-text-dark);">📦 Customer Orders Pipeline</h3>
+                <p style="color:var(--admin-text-muted); font-size:0.86rem;">Live order stream with customer contact details, Razorpay status, and instant kitchen status updater.</p>
+            </div>
+
+            <!-- Status filter selector with safe URL encoding -->
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:0.82rem; font-weight:600; color:var(--admin-text-muted);">Status Filter:</span>
+                <select onchange="location = this.value;" class="form-select" style="padding:6px 14px; font-size:0.82rem; width:auto; border-radius:var(--radius-pill);">
+                    {% if not status_filter %}
+                        <option value="{% url 'admin_dashboard' %}" selected>All Orders ({{ total_orders }})</option>
+                    {% else %}
+                        <option value="{% url 'admin_dashboard' %}">All Orders ({{ total_orders }})</option>
+                    {% endif %}
+                    {% for sc in status_choices %}
+                        {% if status_filter == sc %}
+                            <option value="{% url 'admin_dashboard' %}?order_status={{ sc|urlencode }}" selected>{{ sc }}</option>
+                        {% else %}
+                            <option value="{% url 'admin_dashboard' %}?order_status={{ sc|urlencode }}">{{ sc }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Order No. &amp; Time</th>
+                        <th>Customer &amp; Quick Contact</th>
+                        <th>Items Ordered</th>
+                        <th>Delivery Slot &amp; Address</th>
+                        <th>Payment Method</th>
+                        <th>Total</th>
+                        <th>Kitchen &amp; Delivery Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in orders %}
+                    <tr id="orderRow-{{ o.id }}">
+                        <td>
+                            <strong style="color:var(--admin-rose); font-size:0.92rem;">#{{ o.order_number }}</strong>
+                            <div style="font-size:0.76rem; color:var(--admin-text-muted); margin-top:2px;">{{ o.created_at|date:"M d, H:i" }}</div>
+                            {% if o.cake_message %}
+                                <div style="font-size:0.75rem; color:var(--admin-gold); font-weight:700; margin-top:4px; background:var(--admin-gold-light); padding:2px 8px; border-radius:4px; display:inline-block;">
+                                    🎂 &ldquo;{{ o.cake_message }}&rdquo;
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="font-weight:700; color:var(--admin-text-dark); margin-bottom:4px;">{{ o.customer_name }}</div>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:2px;">
+                                <a href="tel:{{ o.phone }}" class="contact-action-btn" title="Call Customer">
+                                    <span>📞</span>
+                                    <span>{{ o.phone }}</span>
+                                </a>
+                                <button type="button" class="contact-action-btn wa" data-phone="{{ o.phone }}" onclick="openWhatsApp(this)" title="Message on WhatsApp">
+                                    <span>💬 WhatsApp</span>
+                                </button>
+                            </div>
+                            {% if o.email %}
+                                <div style="font-size:0.74rem; color:var(--admin-text-light); margin-top:4px;">✉️ {{ o.email }}</div>
+                            {% endif %}
+                        </td>
+                        <td style="max-width:280px; font-size:0.84rem; line-height:1.45; color:var(--admin-text-dark);">
+                            {{ o.items }}
+                        </td>
+                        <td style="max-width:240px; font-size:0.82rem; color:var(--admin-text-muted); line-height:1.4;">
+                            <div style="font-weight:700; color:var(--admin-text-dark); margin-bottom:2px;">📅 {{ o.delivery_date|default:"Standard Delivery" }}</div>
+                            {% if o.delivery_slot %}
+                                <div style="font-size:0.78rem; color:var(--admin-gold); font-weight:600; margin-bottom:2px;">⏰ {{ o.delivery_slot }}</div>
+                            {% endif %}
+                            <div style="font-size:0.78rem;">📍 {{ o.address|truncatechars:50 }}</div>
+                        </td>
+                        <td>
+                            <!-- Payment Method & Verification Status -->
+                            {% if "Cash on Delivery" in o.payment_method or o.payment_method == "COD" %}
+                                <span class="status-badge status-cod">💵 Cash on Delivery</span>
+                                <div style="font-size:0.72rem; color:var(--admin-warning); font-weight:600; margin-top:4px;">
+                                    Collect on Arrival
+                                </div>
+                            {% else %}
+                                {% if o.payment_status == "Paid" %}
+                                    <span class="status-badge status-paid">✓ Paid (Razorpay)</span>
+                                {% elif o.payment_status == "Failed" %}
+                                    <span class="status-badge status-failed">✕ Failed</span>
+                                {% else %}
+                                    <span class="status-badge status-pending">⏳ Pending</span>
+                                {% endif %}
+                                <div style="font-size:0.72rem; color:var(--admin-text-light); margin-top:4px;" title="{{ o.razorpay_payment_id }}">
+                                    {% if o.razorpay_payment_id %}{{ o.razorpay_payment_id|truncatechars:16 }}{% else %}Online Verified{% endif %}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight:700; font-family:var(--font-serif); font-size:1.15rem; color:var(--admin-text-dark);">
+                            ₹{{ o.total }}
+                        </td>
+                        <td>
+                            <!-- Real-time AJAX status updater without scroll loss -->
+                            <form id="statusForm-{{ o.id }}" method="post" action="{% url 'admin_update_order_status' o.id %}">
+                                {% csrf_token %}
+                                <select name="order_status" id="statusSelect-{{ o.id }}" class="form-select" 
+                                        style="padding:6px 12px; font-size:0.8rem; border-radius:var(--radius-pill); width:auto; font-weight:600;"
+                                        data-order-id="{{ o.id }}"
+                                        onchange="updateOrderStatusAjax(this)">
+                                    {% for sc in status_choices %}
+                                        {% if o.order_status == sc %}
+                                            <option value="{{ sc }}" selected>{{ sc }}</option>
+                                        {% else %}
+                                            <option value="{{ sc }}">{{ sc }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:36px; color:var(--admin-text-muted);">No orders found matching this filter.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================================
+     MODAL: ADD NEW CAKE
+     ============================================================== -->
+<div class="admin-modal-backdrop" id="adminAddCakeModal" role="dialog" aria-modal="true" aria-labelledby="addCakeModalTitle">
+    <div class="admin-modal-window">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:14px; border-bottom:1px solid var(--admin-border-subtle);">
+            <h3 id="addCakeModalTitle" style="font-size:1.45rem; font-weight:700; font-family:var(--font-serif); color:var(--admin-text-dark);">➕ Add New Cake to Menu</h3>
+            <button type="button" class="modal-close-btn" onclick="closeAddCakeModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <form method="post" action="{% url 'admin_add_cake' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="addCakeName" class="form-label">Cake Name *</label>
+                <input type="text" id="addCakeName" name="name" class="form-input" placeholder="e.g. Raspberry Pistachio Tart Cake" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="addCakeCategory" class="form-label">Category *</label>
+                    <select id="addCakeCategory" name="category" class="form-select">
+                        <option value="Chocolate">Chocolate Obsession</option>
+                        <option value="Cheesecake">Artisan Cheesecakes</option>
+                        <option value="Fruit">Fresh Fruit &amp; Berries</option>
+                        <option value="Exotic">Exotic &amp; Signature</option>
+                        <option value="Eggless">100% Eggless Specials</option>
+                        <option value="Pastry">Artisan Pastries</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="addCakePrice" class="form-label">Base Price (₹) *</label>
+                    <input type="number" step="0.01" min="1" id="addCakePrice" name="price" class="form-input" placeholder="799.00" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="addCakeOriginalPrice" class="form-label">Original Price / MRP (₹)</label>
+                    <input type="number" step="0.01" min="1" id="addCakeOriginalPrice" name="original_price" class="form-input" placeholder="999.00 (optional)">
+                </div>
+                <div class="form-group">
+                    <label for="addCakeBadge" class="form-label">Badge Label (e.g. Bestseller, Trending)</label>
+                    <input type="text" id="addCakeBadge" name="badge" class="form-input" placeholder="Chef's Special">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="addCakeImageUrl" class="form-label">Image URL (Unsplash or direct image link)</label>
+                <input type="url" id="addCakeImageUrl" name="image_url" class="form-input" placeholder="https://images.unsplash.com/photo-...">
+            </div>
+
+            <div class="form-group">
+                <label for="addCakeWeights" class="form-label">Weight Options (comma separated)</label>
+                <input type="text" id="addCakeWeights" name="weight_options" class="form-input" value="0.5 kg, 1 kg, 1.5 kg, 2 kg">
+            </div>
+
+            <div class="form-group">
+                <label for="addCakeDesc" class="form-label">Description &amp; Ingredients</label>
+                <textarea id="addCakeDesc" name="description" rows="3" class="form-textarea" placeholder="Describe the flavors, layers, origin of cocoa, and textures..."></textarea>
+            </div>
+
+            <div style="display:flex; gap:24px; margin-bottom:28px; flex-wrap:wrap; padding:12px 16px; background:#faf7f2; border-radius:var(--radius-md);">
+                <label class="toggle-switch-label">
+                    <input type="checkbox" name="is_eggless">
+                    <span>🌱 100% Eggless (Vegetarian)</span>
+                </label>
+                <label class="toggle-switch-label">
+                    <input type="checkbox" name="available" checked>
+                    <span>📦 Available (In Stock)</span>
+                </label>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" class="btn btn-soft" onclick="closeAddCakeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save &amp; Publish Cake</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==============================================================
+     MODAL: EDIT EXISTING CAKE
+     ============================================================== -->
+<div class="admin-modal-backdrop" id="adminEditCakeModal" role="dialog" aria-modal="true" aria-labelledby="editCakeModalTitle">
+    <div class="admin-modal-window">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:14px; border-bottom:1px solid var(--admin-border-subtle);">
+            <h3 id="editCakeModalTitle" style="font-size:1.45rem; font-weight:700; font-family:var(--font-serif); color:var(--admin-text-dark);">✏️ Edit Cake Details</h3>
+            <button type="button" class="modal-close-btn" onclick="closeEditCakeModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <form id="editCakeForm" method="post" action="#">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="editName" class="form-label">Cake Name *</label>
+                <input type="text" name="name" id="editName" class="form-input" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editCategory" class="form-label">Category *</label>
+                    <select name="category" id="editCategory" class="form-select">
+                        <option value="Chocolate">Chocolate Obsession</option>
+                        <option value="Cheesecake">Artisan Cheesecakes</option>
+                        <option value="Fruit">Fresh Fruit &amp; Berries</option>
+                        <option value="Exotic">Exotic &amp; Signature</option>
+                        <option value="Eggless">100% Eggless Specials</option>
+                        <option value="Pastry">Artisan Pastries</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editPrice" class="form-label">Base Price (₹) *</label>
+                    <input type="number" step="0.01" min="1" name="price" id="editPrice" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editOriginalPrice" class="form-label">Original Price / MRP (₹)</label>
+                    <input type="number" step="0.01" min="1" name="original_price" id="editOriginalPrice" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="editBadge" class="form-label">Badge Label</label>
+                    <input type="text" name="badge" id="editBadge" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="editImageUrl" class="form-label">Image URL</label>
+                <input type="url" name="image_url" id="editImageUrl" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="editWeightOptions" class="form-label">Weight Options</label>
+                <input type="text" name="weight_options" id="editWeightOptions" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="editDescription" class="form-label">Description</label>
+                <textarea name="description" id="editDescription" rows="3" class="form-textarea"></textarea>
+            </div>
+
+            <div style="display:flex; gap:24px; margin-bottom:28px; flex-wrap:wrap; padding:12px 16px; background:#faf7f2; border-radius:var(--radius-md);">
+                <label class="toggle-switch-label">
+                    <input type="checkbox" name="is_eggless" id="editIsEggless">
+                    <span>🌱 100% Eggless</span>
+                </label>
+                <label class="toggle-switch-label">
+                    <input type="checkbox" name="available" id="editAvailable">
+                    <span>📦 Available (In Stock)</span>
+                </label>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" class="btn btn-soft" onclick="closeEditCakeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* ── Helper: Image Fallback ─────────────────────────────── */
+    function handleImageFallback(img) {
+        img.onerror = null;
+        img.src = 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100&auto=format&fit=crop&q=80';
+    }
+
+    /* ── Helper: WhatsApp Instant Chat ──────────────────────── */
+    function openWhatsApp(btn) {
+        var phone = btn.getAttribute('data-phone') || '';
+        var clean = phone.replace(/[^0-9]/g, '');
+        if (clean.length === 10) clean = '91' + clean;
+        window.open('https://wa.me/' + clean, '_blank');
+    }
+
+    /* ── Helper: Dynamic Toast ───────────────────────────────── */
+    function showAdminToast(msg, icon) {
+        var existing = document.querySelector('.admin-toast');
+        if (existing) existing.remove();
+
+        var toast = document.createElement('div');
+        toast.className = 'admin-toast';
+        toast.innerHTML = '<span>' + (icon || '✨') + '</span> <span>' + msg + '</span>';
+        document.body.appendChild(toast);
+
+        setTimeout(function() {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(function() { toast.remove(); }, 350);
+        }, 3200);
+    }
+
+    /* ── Modal Open / Close Handlers ─────────────────────────── */
+    function openAddCakeModal() {
+        var modal = document.getElementById('adminAddCakeModal');
+        modal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function() {
+            var input = document.getElementById('addCakeName');
+            if (input) input.focus();
+        }, 100);
+    }
+
+    function closeAddCakeModal() {
+        document.getElementById('adminAddCakeModal').classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    function closeEditCakeModal() {
+        document.getElementById('adminEditCakeModal').classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    /* ── Edit Modal Pre-fill & API Sync ──────────────────────── */
+    function openEditCakeModal(btn) {
+        var cakeId = btn.getAttribute('data-cake-id');
+        var editUrl = '/dashboard/cake/edit/' + cakeId + '/';
+        var form = document.getElementById('editCakeForm');
+        form.setAttribute('action', editUrl);
+
+        // Instant population from embedded JSON script block (zero lag, zero quote issues)
+        var dataScript = document.getElementById('cakeData-' + cakeId);
+        if (dataScript) {
+            try {
+                var data = JSON.parse(dataScript.textContent);
+                document.getElementById('editName').value          = data.name || '';
+                document.getElementById('editPrice').value         = data.price || '';
+                document.getElementById('editOriginalPrice').value = data.original_price || '';
+                document.getElementById('editImageUrl').value      = data.image_url || '';
+                document.getElementById('editBadge').value         = data.badge || '';
+                document.getElementById('editWeightOptions').value = data.weight_options || '';
+                document.getElementById('editDescription').value   = data.description || '';
+                document.getElementById('editIsEggless').checked   = !!data.is_eggless;
+                document.getElementById('editAvailable').checked   = !!data.available;
+
+                var catSelect = document.getElementById('editCategory');
+                if (catSelect && data.category) {
+                    for (var i = 0; i < catSelect.options.length; i++) {
+                        catSelect.options[i].selected = (catSelect.options[i].value === data.category);
+                    }
+                }
+            } catch (e) {
+                console.warn('JSON parse fallback', e);
+            }
+        }
+
+        var modal = document.getElementById('adminEditCakeModal');
+        modal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+
+        setTimeout(function() {
+            var input = document.getElementById('editName');
+            if (input) input.focus();
+        }, 100);
+
+        // Background sync to ensure data is 100% current
+        fetch(editUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(res) {
+            if (res.ok) return res.json();
+            throw new Error('Sync failed');
+        })
+        .then(function(data) {
+            if (data.name) document.getElementById('editName').value = data.name;
+            if (data.price) document.getElementById('editPrice').value = data.price;
+            if (data.original_price !== undefined) document.getElementById('editOriginalPrice').value = data.original_price;
+            if (data.image_url) document.getElementById('editImageUrl').value = data.image_url;
+            if (data.badge !== undefined) document.getElementById('editBadge').value = data.badge;
+            if (data.weight_options) document.getElementById('editWeightOptions').value = data.weight_options;
+            if (data.description !== undefined) document.getElementById('editDescription').value = data.description;
+            if (data.is_eggless !== undefined) document.getElementById('editIsEggless').checked = !!data.is_eggless;
+            if (data.available !== undefined) document.getElementById('editAvailable').checked = !!data.available;
+        })
+        .catch(function() {
+            // Already filled from script block, safe to continue
+        });
+    }
+
+    /* ── Secure Async CSRF Deletion ──────────────────────────── */
+    function confirmDeleteCake(btn) {
+        var cakeId = btn.getAttribute('data-cake-id');
+        var cakeName = btn.getAttribute('data-cake-name') || 'Cake';
+
+        if (!confirm('Are you sure you want to permanently delete "' + cakeName + '" from the menu?\n\nThis action cannot be undone.')) {
+            return;
+        }
+
+        var tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        var csrfToken = tokenInput ? tokenInput.value : '';
+        var deleteUrl = '/dashboard/cake/delete/' + cakeId + '/';
+
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(function(res) {
+            if (res.ok) return res.json();
+            window.location.reload();
+        })
+        .then(function(data) {
+            var row = document.getElementById('cakeRow-' + cakeId);
+            if (row) {
+                row.style.opacity = '0';
+                setTimeout(function() {
+                    row.remove();
+                    var totalEl = document.getElementById('kpiTotalCount');
+                    if (totalEl) {
+                        var count = parseInt(totalEl.textContent, 10);
+                        if (!isNaN(count) && count > 0) totalEl.textContent = count - 1;
+                    }
+                    showAdminToast('Cake removed from menu successfully.', '🗑️');
+                }, 300);
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(function() {
+            window.location.href = deleteUrl;
+        });
+    }
+
+    /* ── AJAX Order Status Update (No Scroll Jump) ───────────── */
+    function updateOrderStatusAjax(selectEl) {
+        var orderId = selectEl.getAttribute('data-order-id');
+        var form = document.getElementById('statusForm-' + orderId);
+        if (!form) return;
+
+        var formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        })
+        .then(function(res) {
+            if (res.ok) return res.json();
+            form.submit();
+        })
+        .then(function(data) {
+            var row = document.getElementById('orderRow-' + orderId);
+            if (row) {
+                row.style.backgroundColor = '#ecfdf5';
+                setTimeout(function() {
+                    row.style.backgroundColor = '';
+                }, 1000);
+            }
+            showAdminToast('Order #' + (data.order_number || orderId) + ' status updated to ' + selectEl.value, '📦');
+        })
+        .catch(function() {
+            form.submit();
+        });
+    }
+
+    /* ── Real-time In-Stock / Out-of-Stock Toggle ─────────────── */
+    function toggleStockAvailability(btn) {
+        var cakeId = btn.getAttribute('data-cake-id');
+        var url = '/dashboard/cake/toggle/' + cakeId + '/';
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(res) {
+            if (res.ok) return res.json();
+            window.location.href = url;
+        })
+        .then(function(data) {
+            if (data.available) {
+                btn.className = 'stock-badge-btn in-stock';
+                btn.innerHTML = '<span>● In Stock</span>';
+            } else {
+                btn.className = 'stock-badge-btn out-of-stock';
+                btn.innerHTML = '<span>○ Out of Stock</span>';
+            }
+
+            var availEl = document.getElementById('kpiAvailCount');
+            if (availEl) {
+                var current = parseInt(availEl.textContent, 10);
+                if (!isNaN(current)) {
+                    availEl.textContent = data.available ? current + 1 : Math.max(0, current - 1);
+                }
+            }
+
+            showAdminToast('Stock status updated to ' + data.status, '📦');
+        })
+        .catch(function() {
+            window.location.href = url;
+        });
+    }
+
+    /* ── Instant Filter with No-Match State ─────────────────── */
+    function filterCakesTable() {
+        var inputEl = document.getElementById('cakeSearchInput');
+        var query = inputEl ? inputEl.value.toLowerCase().trim() : '';
+        var rows = document.querySelectorAll('.cake-row');
+        var matched = 0;
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var name = (row.getAttribute('data-cake-name') || '').toLowerCase();
+            var cat = (row.getAttribute('data-cake-category') || '').toLowerCase();
+            if (!query || name.indexOf(query) !== -1 || cat.indexOf(query) !== -1) {
+                row.style.display = '';
+                matched++;
+            } else {
+                row.style.display = 'none';
+            }
+        }
+
+        var noMatch = document.getElementById('noSearchMatchRow');
+        if (noMatch) {
+            noMatch.style.display = (matched === 0 && query.length > 0) ? '' : 'none';
+        }
+    }
+
+    /* ── Backdrop & ESC Key Close Listeners ──────────────────── */
+    document.getElementById('adminAddCakeModal').addEventListener('click', function(e) {
+        if (e.target === this) closeAddCakeModal();
+    });
+    document.getElementById('adminEditCakeModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditCakeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAddCakeModal();
+            closeEditCakeModal();
+        }
+    });
+</script>
+{% endblock %}

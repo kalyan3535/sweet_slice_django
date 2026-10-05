@@ -1,0 +1,173 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}{{ cake.name }} — Sweet Slice Patisserie{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:40px; padding-bottom:80px;">
+    <!-- Breadcrumb -->
+    <div style="font-size:0.86rem; color:var(--color-cocoa-muted); margin-bottom:28px;">
+        <a href="{% url 'home' %}">Home</a> &nbsp;/&nbsp; 
+        <a href="{% url 'cakes' %}">Cakes</a> &nbsp;/&nbsp; 
+        <a href="{% url 'cakes' %}?category={{ cake.category }}">{{ cake.category }}</a> &nbsp;/&nbsp; 
+        <span style="color:var(--color-cocoa-dark); font-weight:600;">{{ cake.name }}</span>
+    </div>
+
+    <!-- Editorial 2-Column Layout -->
+    <div class="product-detail-layout cake-detail-card" data-base-price="{{ cake.price }}">
+        <!-- Left: Large Product Photography -->
+        <div>
+            <div class="product-gallery-frame">
+                <img src="{{ cake.image_url }}" alt="{{ cake.name }}">
+
+                {% if cake.badge %}
+                    <span class="card-tag" style="top:20px; left:20px; font-size:0.8rem; padding:6px 14px;">{{ cake.badge }}</span>
+                {% endif %}
+
+                <div class="card-diet-dot" style="top:20px; right:20px; width:26px; height:26px;" title="{% if cake.is_eggless %}Eggless (Vegetarian){% else %}Contains Egg{% endif %}">
+                    <span class="dot-indicator {% if cake.is_eggless %}veg{% else %}nonveg{% endif %}" style="width:10px; height:10px;"></span>
+                </div>
+            </div>
+
+            <!-- Trust Pills -->
+            <div class="trust-pills-row">
+                <div style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:14px; text-align:center;">
+                    <div style="font-size:1.4rem;">🎂</div>
+                    <div style="font-size:0.78rem; font-weight:700; color:var(--color-cocoa-dark);">Baked Fresh Daily</div>
+                </div>
+                <div style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:14px; text-align:center;">
+                    <div style="font-size:1.4rem;">🕯️</div>
+                    <div style="font-size:0.78rem; font-weight:700; color:var(--color-cocoa-dark);">Candles Included</div>
+                </div>
+                <div style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:14px; text-align:center;">
+                    <div style="font-size:1.4rem;">❄️</div>
+                    <div style="font-size:0.78rem; font-weight:700; color:var(--color-cocoa-dark);">Cold Transit Delivery</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Information & Customization -->
+        <div class="product-info-panel">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                <span class="eyebrow" style="margin-bottom:0;">{{ cake.category }} Collection</span>
+                <div style="color:#D97706; font-size:0.9rem; font-weight:700;">
+                    ★★★★★ <span style="color:var(--color-cocoa-muted); font-size:0.8rem; font-weight:500;">({{ cake.reviews_count }} reviews)</span>
+                </div>
+            </div>
+
+            <h1 style="font-size:clamp(1.8rem, 5vw, 2.4rem); font-weight:600; margin-bottom:12px; line-height:1.2;">{{ cake.name }}</h1>
+
+            <!-- Price -->
+            <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+                <span class="dynamic-price" style="font-size:2rem; font-weight:700; color:var(--color-cocoa-dark);">₹{{ cake.price }}</span>
+                {% if cake.original_price %}
+                    <span style="font-size:1.1rem; color:var(--color-cocoa-light); text-decoration:line-through;">₹{{ cake.original_price }}</span>
+                {% endif %}
+                <span style="font-size:0.8rem; color:var(--color-cocoa-muted);">(Taxes included)</span>
+            </div>
+
+            <!-- Description -->
+            <p style="color:var(--color-cocoa-muted); font-size:1rem; line-height:1.7; margin-bottom:28px;">
+                {{ cake.description }}
+            </p>
+
+            <!-- Customization Form -->
+            <form method="post" action="{% url 'add_to_cart' cake.id %}" class="ajax-add-cart-form">
+                {% csrf_token %}
+                <input type="hidden" name="weight" value="1 kg">
+                <input type="hidden" name="next" value="{% url 'cake_detail' cake.id %}">
+
+                <!-- Choose Size -->
+                <div style="margin-bottom:24px;">
+                    <label style="font-size:0.86rem; font-weight:700; display:block; margin-bottom:8px; color:var(--color-cocoa-dark);">
+                        Choose Size:
+                    </label>
+                    <div class="size-pill-group" style="margin:0;">
+                        {% for w in weight_list %}
+                        <button type="button" class="size-pill weight-pill-btn {% if '1' in w %}active{% endif %}" data-weight="{{ w }}">
+                            {{ w }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Optional Custom Message on Cake -->
+                <div style="margin-bottom:24px;">
+                    <label style="font-size:0.86rem; font-weight:700; display:block; margin-bottom:6px; color:var(--color-cocoa-dark);">
+                        <span>Complimentary Piped Message:</span>
+                        <span style="font-weight:400; color:var(--color-cocoa-light); font-size:0.78rem;">(Max 35 chars)</span>
+                    </label>
+                    <input type="text" name="custom_msg" maxlength="35" class="form-input-clean" placeholder="e.g. Happy Birthday Sarah ✨" style="margin-bottom:0;">
+                </div>
+
+                <!-- Quantity & Add to Cart -->
+                <div class="detail-cta-row">
+                    <div>
+                        <select name="quantity" class="form-input-clean" style="margin-bottom:0; padding:15px; font-weight:600;">
+                            <option value="1">1 Qty</option>
+                            <option value="2">2 Qty</option>
+                            <option value="3">3 Qty</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        {% if cake.available %}
+                            {% if user.is_authenticated %}
+                                <button type="submit" class="btn btn-primary btn-block btn-lg" style="box-shadow:0 8px 24px rgba(34,22,20,0.18);">
+                                    <span>Add to Cart</span>
+                                    <span>•</span>
+                                    <span class="dynamic-price">₹{{ cake.price }}</span>
+                                </button>
+                            {% else %}
+                                <a href="{% url 'login' %}?next={% url 'cake_detail' cake.id %}" class="btn btn-primary btn-block btn-lg" style="box-shadow:0 8px 24px rgba(34,22,20,0.18); text-align:center;">
+                                    <span>🔒 Sign In to Purchase</span>
+                                    <span>•</span>
+                                    <span class="dynamic-price">₹{{ cake.price }}</span>
+                                </a>
+                                <p style="text-align:center; font-size:0.78rem; color:var(--color-cocoa-light); margin-top:8px;">
+                                    Browsing is free! Sign in only when you are ready to order.
+                                </p>
+                            {% endif %}
+                        {% else %}
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" disabled style="opacity:0.6;">
+                                Sold Out Today
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Related Cakes -->
+    {% if related_cakes %}
+    <div style="margin-top:60px; padding-top:40px; border-top:1px solid var(--color-border);">
+        <div class="section-editorial-header">
+            <div>
+                <span class="eyebrow">Complementary Flavors</span>
+                <h3 class="editorial-title" style="font-size:2rem;">You Might Also Enjoy</h3>
+            </div>
+            <a href="{% url 'cakes' %}" class="btn btn-soft btn-sm">View All Menu →</a>
+        </div>
+
+        <div class="products-editorial-grid">
+            {% for r in related_cakes %}
+            <div class="boutique-card">
+                <div class="boutique-card-media" style="height:240px;">
+                    <a href="{% url 'cake_detail' r.id %}">
+                        <img src="{{ r.image_url }}" alt="{{ r.name }}">
+                    </a>
+                </div>
+                <div class="boutique-card-info">
+                    <h4 class="boutique-card-title" style="font-size:1.15rem;">
+                        <a href="{% url 'cake_detail' r.id %}">{{ r.name }}</a>
+                    </h4>
+                    <span class="boutique-card-price">₹{{ r.price }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

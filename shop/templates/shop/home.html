@@ -1,0 +1,399 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Sweet Slice — Sweet moments, beautifully crafted{% endblock %}
+
+{% block content %}
+<!-- ==============================================================
+     1. CINEMATIC HERO SECTION
+     ============================================================== -->
+<section class="cinematic-hero">
+    <div class="container">
+        <div class="hero-layout">
+            <div class="hero-copy">
+                <span class="eyebrow">Artisanal Cake Atelier</span>
+                <h1 class="hero-headline">
+                    Sweet moments,<br>
+                    <em>beautifully</em> crafted.
+                </h1>
+                <p class="hero-description">
+                    Handcrafted cakes made for birthdays, celebrations and everything worth remembering. Baked to order with single-origin cocoa and organic dairy.
+                </p>
+
+                <div class="hero-cta-wrap">
+                    <a href="{% url 'cakes' %}" class="btn btn-primary btn-lg" id="heroExploreBtn">
+                        <span>Explore Cakes</span>
+                        <span>→</span>
+                    </a>
+                    <a href="{% url 'about' %}" class="btn btn-secondary btn-lg" id="heroAboutBtn">
+                        <span>Our Craft</span>
+                    </a>
+                </div>
+
+                <div class="hero-trust-strip">
+                    <div class="hero-trust-item">
+                        <span>🎂</span>
+                        <span><strong>Baked Daily</strong> to Order</span>
+                    </div>
+                    <div class="hero-trust-item">
+                        <span>❄️</span>
+                        <span><strong>Cold Transit</strong> Delivery</span>
+                    </div>
+                    <div class="hero-trust-item">
+                        <span>✨</span>
+                        <span><strong>100%</strong> Belgian Cocoa</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Cinematic Frame -->
+            <div class="hero-visual-frame">
+                <div class="hero-image-frame">
+                    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1000&auto=format&fit=crop&q=85" alt="Signature Belgian Dark Chocolate Cake">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================
+     2. FEATURED CATEGORIES (LARGE VISUAL TILES WITH REFINED HOVER)
+     Image zooms → title moves subtly → arrow appears
+     ============================================================== -->
+<section class="categories-section">
+    <div class="container">
+        <div class="section-editorial-header">
+            <div>
+                <span class="eyebrow">Curated Collections</span>
+                <h2 class="editorial-title">Cakes for Every Milestone</h2>
+            </div>
+            <a href="{% url 'cakes' %}" class="btn btn-soft btn-sm">
+                <span>View All Collections</span>
+                <span>→</span>
+            </a>
+        </div>
+
+        <div class="category-tiles-grid">
+            <!-- Birthday Cakes -->
+            <a href="{% url 'cakes' %}?category=Chocolate" class="category-tile">
+                <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=700&auto=format&fit=crop&q=80" alt="Birthday Cakes">
+                <div class="category-tile-overlay"></div>
+                <div class="category-tile-content">
+                    <div>
+                        <div class="category-tile-name">Birthday Cakes</div>
+                        <span style="font-size:0.78rem; opacity:0.85;">Celebration Centerpieces</span>
+                    </div>
+                    <div class="category-tile-arrow">→</div>
+                </div>
+            </a>
+
+            <!-- Wedding & Tiered Cakes -->
+            <a href="{% url 'cakes' %}?category=Exotic" class="category-tile">
+                <img src="https://images.unsplash.com/photo-1519869325930-281384150729?w=800&auto=format&fit=crop&q=80" alt="Wedding Cakes">
+                <div class="category-tile-overlay"></div>
+                <div class="category-tile-content">
+                    <div>
+                        <div class="category-tile-name">Wedding Cakes</div>
+                        <span style="font-size:0.78rem; opacity:0.85;">Tiered Elegance</span>
+                    </div>
+                    <div class="category-tile-arrow">→</div>
+                </div>
+            </a>
+
+            <!-- Chocolate Cakes -->
+            <a href="{% url 'cakes' %}?category=Chocolate" class="category-tile">
+                <img src="https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=700&auto=format&fit=crop&q=80" alt="Chocolate Cakes">
+                <div class="category-tile-overlay"></div>
+                <div class="category-tile-content">
+                    <div>
+                        <div class="category-tile-name">Chocolate Cakes</div>
+                        <span style="font-size:0.78rem; opacity:0.85;">Dark & Decadent</span>
+                    </div>
+                    <div class="category-tile-arrow">→</div>
+                </div>
+            </a>
+
+            <!-- Cheesecakes -->
+            <a href="{% url 'cakes' %}?category=Cheesecake" class="category-tile">
+                <img src="https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=700&auto=format&fit=crop&q=80" alt="Cheesecakes">
+                <div class="category-tile-overlay"></div>
+                <div class="category-tile-content">
+                    <div>
+                        <div class="category-tile-name">Cheesecakes</div>
+                        <span style="font-size:0.78rem; opacity:0.85;">Slow-Baked Velvet</span>
+                    </div>
+                    <div class="category-tile-arrow">→</div>
+                </div>
+            </a>
+
+            <!-- Eggless Specials -->
+            <a href="{% url 'cakes' %}?category=Eggless" class="category-tile">
+                <img src="https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?w=700&auto=format&fit=crop&q=80" alt="Eggless Cakes">
+                <div class="category-tile-overlay"></div>
+                <div class="category-tile-content">
+                    <div>
+                        <div class="category-tile-name">Eggless Specials</div>
+                        <span style="font-size:0.78rem; opacity:0.85;">100% Pure Vegetarian</span>
+                    </div>
+                    <div class="category-tile-arrow">→</div>
+                </div>
+            </a>
+
+            <!-- Artisan Pastries -->
+            <a href="{% url 'cakes' %}?category=Pastry" class="category-tile">
+                <img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=700&auto=format&fit=crop&q=80" alt="Artisan Pastries">
+                <div class="category-tile-overlay"></div>
+                <div class="category-tile-content">
+                    <div>
+                        <div class="category-tile-name">Artisan Pastries</div>
+                        <span style="font-size:0.78rem; opacity:0.85;">Flaky & Fresh</span>
+                    </div>
+                    <div class="category-tile-arrow">→</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================
+     3. BESTSELLERS (IMAGE-FIRST PRODUCT CARDS)
+     ============================================================== -->
+<section class="bestsellers-section" id="bestsellersSection">
+    <div class="container">
+        <div class="section-editorial-header">
+            <div>
+                <span class="eyebrow">Studio Favorites</span>
+                <h2 class="editorial-title">Our Bestselling Creations</h2>
+            </div>
+            <a href="{% url 'cakes' %}" class="btn btn-soft btn-sm">
+                <span>Browse Full Menu</span>
+                <span>→</span>
+            </a>
+        </div>
+
+        <div class="products-editorial-grid">
+            {% for cake in bestsellers %}
+            <div class="boutique-card">
+                <div class="boutique-card-media">
+                    {% if cake.badge %}
+                        <span class="card-tag">{{ cake.badge }}</span>
+                    {% endif %}
+
+                    <div class="card-diet-dot" title="{% if cake.is_eggless %}Eggless (Vegetarian){% else %}Contains Egg{% endif %}">
+                        <span class="dot-indicator {% if cake.is_eggless %}veg{% else %}nonveg{% endif %}"></span>
+                    </div>
+
+                    <a href="{% url 'cake_detail' cake.id %}">
+                        <img src="{{ cake.image_url }}" alt="{{ cake.name }}" loading="lazy">
+                    </a>
+
+                    <!-- Subtle Quick Add Overlay on Hover -->
+                    <div class="quick-add-overlay">
+                        <form method="post" action="{% url 'add_to_cart' cake.id %}" class="ajax-add-cart-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="weight" value="1 kg">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary btn-block btn-sm" style="background:#FFFFFF; color:var(--color-cocoa-dark); box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                                <span>+ Quick Add</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="boutique-card-info">
+                    <div class="boutique-card-meta">
+                        <span>{{ cake.category }}</span>
+                        <span>★ {{ cake.rating }}</span>
+                    </div>
+
+                    <a href="{% url 'cake_detail' cake.id %}">
+                        <h3 class="boutique-card-title">{{ cake.name }}</h3>
+                    </a>
+
+                    <p class="boutique-card-desc">{{ cake.description }}</p>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                        <span class="boutique-card-price">₹{{ cake.price }}</span>
+                        <a href="{% url 'cake_detail' cake.id %}" style="font-size:0.82rem; font-weight:600; color:var(--color-accent-rose); text-decoration:underline;">
+                            Customize & Order
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column:1/-1; text-align:center; padding:60px 20px;">
+                <div style="font-size:3rem; margin-bottom:14px;">🎂</div>
+                <h3 style="font-size:1.4rem; margin-bottom:8px; color:var(--color-cocoa-dark);">Coming Soon</h3>
+                <p style="color:var(--color-cocoa-muted); margin-bottom:22px;">Our patisserie is getting ready. Check back soon for our freshly baked creations.</p>
+                <a href="{% url 'contact' %}" class="btn btn-secondary"><span>Get Notified</span><span>→</span></a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================
+     4. EDITORIAL STORY SECTION
+     "Every cake starts with an idea, and ends with a memory."
+     ============================================================== -->
+<section class="editorial-story-section">
+    <div class="container">
+        <div class="story-grid">
+            <div class="story-image-wrap">
+                <img src="https://images.unsplash.com/photo-1616541823729-00fe0aacd32c?w=900&auto=format&fit=crop&q=85" alt="Handcrafted Red Velvet Cake">
+            </div>
+
+            <div class="story-content">
+                <span class="eyebrow">Our Philosophy</span>
+                <h2 class="story-quote">
+                    "Every cake starts with an idea,<br>
+                    and ends with a <em>memory</em>."
+                </h2>
+                <p class="story-body">
+                    At Sweet Slice, baking is an art of patience and integrity. We source single-origin 70% Belgian chocolate, slow-churn organic dairy butter, and harvest seasonal berries from local farms. No artificial emulsifiers, no shortcuts. Just honest confectionery crafted to be the centerpiece of your most cherished celebrations.
+                </p>
+                <a href="{% url 'about' %}" class="btn btn-secondary">
+                    <span>Read Our Story</span>
+                    <span>→</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================
+     5. ASYMMETRICAL FOOD MAGAZINE GALLERY
+     Large image, two small images, large image, small image
+     ============================================================== -->
+<section class="magazine-gallery-section">
+    <div class="container">
+        <div style="text-align:center; max-width:600px; margin:0 auto 40px;">
+            <span class="eyebrow">Studio Visual Journal</span>
+            <h2 class="editorial-title" style="margin-bottom:8px;">Fresh from the Patisserie Atelier</h2>
+            <p style="color:var(--color-cocoa-muted); font-size:0.95rem;">Capturing the texture, glaze, and artistry of our daily creations.</p>
+        </div>
+
+        <div class="asymmetrical-gallery-grid">
+            <!-- Large Image 1 -->
+            <div class="gallery-item gallery-large">
+                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=800&auto=format&fit=crop&q=80" alt="Hazelnut Praline Ganache">
+                <div class="gallery-caption">Hazelnut Praline Ganache</div>
+            </div>
+
+            <!-- Small Image 1 -->
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1542826438-bd32f43d626f?w=600&auto=format&fit=crop&q=80" alt="Golden Caramel Crunch">
+                <div class="gallery-caption">Caramel Glaze</div>
+            </div>
+
+            <!-- Small Image 2 -->
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=600&auto=format&fit=crop&q=80" alt="Espresso Mascarpone">
+                <div class="gallery-caption">Espresso Mascarpone</div>
+            </div>
+
+            <!-- Large Image 2 -->
+            <div class="gallery-item gallery-large">
+                <img src="https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=800&auto=format&fit=crop&q=80" alt="Classic Baked Cheesecake">
+                <div class="gallery-caption">New York Baked Crust</div>
+            </div>
+
+            <!-- Small Image 3 -->
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&auto=format&fit=crop&q=80" alt="Strawberry Shortcake">
+                <div class="gallery-caption">Summer Strawberries</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================
+     6. TESTIMONIALS (CLEAN & REFINED)
+     ============================================================== -->
+<section class="testimonials-section">
+    <div class="container">
+        <div style="text-align:center; max-width:540px; margin:0 auto 40px;">
+            <span class="eyebrow">Client Words</span>
+            <h2 class="editorial-title">Shared Celebrations</h2>
+        </div>
+
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "Absolutely beautiful cake. It looked incredible and tasted even better. Everyone at my sister’s engagement asked where we ordered it."
+                </p>
+                <div class="testimonial-author">
+                    <div>
+                        <div class="author-name">Priya Nair</div>
+                        <div class="author-role">Krishnanagar, West Bengal</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "The Belgian chocolate truffle was the highlight of our anniversary. The ganache was silky, rich, and not overly sweet. Pure perfection."
+                </p>
+                <div class="testimonial-author">
+                    <div>
+                        <div class="author-name">Arjun & Sneha Mehta</div>
+                        <div class="author-role">Whitefield, Bengaluru</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "Finding a genuinely gourmet 100% eggless cake has always been tough until Sweet Slice. The Lotus Biscoff cheesecake was heavenly."
+                </p>
+                <div class="testimonial-author">
+                    <div>
+                        <div class="author-name">Kabir Sharma</div>
+                        <div class="author-role">South Extension, New Delhi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================
+     7. DELIVERY / TRUST SECTION
+     ✓ Freshly baked ✓ Premium ingredients ✓ Same-day delivery ✓ Custom designs ✓ Secure payment
+     ============================================================== -->
+<section class="trust-section">
+    <div class="container">
+        <div class="trust-features-row">
+            <div class="trust-feature-item">
+                <div class="trust-icon">🎂</div>
+                <div class="trust-title">Freshly Baked Daily</div>
+                <div class="trust-desc">Baked to order on the morning of your event.</div>
+            </div>
+
+            <div class="trust-feature-item">
+                <div class="trust-icon">🍫</div>
+                <div class="trust-title">Premium Ingredients</div>
+                <div class="trust-desc">100% Belgian chocolate & organic churned butter.</div>
+            </div>
+
+            <div class="trust-feature-item">
+                <div class="trust-icon">🛵</div>
+                <div class="trust-title">Chilled Express Delivery</div>
+                <div class="trust-desc">Temperature-controlled vans ensure melt-free delivery.</div>
+            </div>
+
+            <div class="trust-feature-item">
+                <div class="trust-icon">✨</div>
+                <div class="trust-title">Bespoke Custom Designs</div>
+                <div class="trust-desc">Complimentary custom chocolate piped greetings.</div>
+            </div>
+
+            <div class="trust-feature-item">
+                <div class="trust-icon">🔒</div>
+                <div class="trust-title">Seamless Razorpay Checkout</div>
+                <div class="trust-desc">1-click instant UPI, Cards, and Netbanking.</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

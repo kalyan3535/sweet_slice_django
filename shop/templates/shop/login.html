@@ -1,0 +1,321 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Sign In or Register — Sweet Slice Patisserie{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── Member Auth Sanctuary Styles ────────────────────────── */
+    .auth-section {
+        min-height: calc(100vh - 180px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 50px 20px 80px;
+        box-sizing: border-box;
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 490px;
+        margin: 0 auto;
+    }
+
+    .auth-card {
+        background: #FFFFFF;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl, 24px);
+        box-shadow: 0 16px 40px -10px rgba(34, 22, 20, 0.08);
+        padding: 42px 36px;
+        box-sizing: border-box;
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 26px;
+    }
+
+    .auth-heading {
+        font-family: var(--font-serif);
+        font-size: 2.15rem;
+        font-weight: 600;
+        color: var(--color-cocoa-dark);
+        margin-top: 4px;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+
+    .auth-subheading {
+        color: var(--color-cocoa-muted);
+        font-size: 0.92rem;
+        line-height: 1.55;
+    }
+
+    .auth-context-banner {
+        background: var(--color-accent-rose-light);
+        border: 1px solid rgba(150, 53, 75, 0.18);
+        border-radius: var(--radius-md);
+        padding: 12px 18px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .auth-tabs-row {
+        display: flex;
+        border-bottom: 2px solid var(--color-border-subtle);
+        margin-bottom: 28px;
+    }
+
+    .auth-tab-btn {
+        flex: 1;
+        text-align: center;
+        padding: 12px 16px;
+        background: none;
+        border: none;
+        font-family: var(--font-serif);
+        font-size: 1.15rem;
+        font-weight: 600;
+        cursor: pointer;
+        position: relative;
+        transition: all var(--transition);
+        color: var(--color-cocoa-muted);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+    }
+
+    /* Tab Switcher State Management via data-active-tab */
+    .auth-card[data-active-tab="login"] #loginTabContent {
+        display: block;
+    }
+    .auth-card[data-active-tab="login"] #registerTabContent {
+        display: none;
+    }
+    .auth-card[data-active-tab="login"] #tabBtnLogin {
+        color: var(--color-cocoa-dark);
+        border-bottom-color: var(--color-accent-rose);
+    }
+
+    .auth-card[data-active-tab="register"] #loginTabContent {
+        display: none;
+    }
+    .auth-card[data-active-tab="register"] #registerTabContent {
+        display: block;
+    }
+    .auth-card[data-active-tab="register"] #tabBtnRegister {
+        color: var(--color-cocoa-dark);
+        border-bottom-color: var(--color-accent-rose);
+    }
+
+    .btn-auth-link {
+        background: none;
+        border: none;
+        color: var(--color-accent-rose);
+        font-weight: 700;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: inherit;
+        padding: 0;
+        margin-left: 4px;
+        font-family: inherit;
+    }
+
+    .auth-trust-strip {
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid var(--color-border-subtle);
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        color: var(--color-cocoa-light);
+        font-size: 0.8rem;
+        text-align: center;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 560px) {
+        .auth-section {
+            padding: 30px 14px 60px;
+            min-height: auto;
+        }
+        .auth-card {
+            padding: 28px 18px;
+            border-radius: var(--radius-lg, 18px);
+        }
+        .auth-heading {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="auth-section" aria-label="Member Authentication">
+    <div class="auth-container">
+        <div class="auth-card" id="authCard" data-active-tab="{{ active_tab|default:'login' }}">
+            
+            <!-- Brand Mark and Eyebrow -->
+            <div class="auth-header">
+                <span class="eyebrow" style="letter-spacing:0.18em;">Sweet Slice Patisserie</span>
+                <h1 class="auth-heading">Member Sanctuary</h1>
+                <p class="auth-subheading">
+                    Browse &amp; explore all cakes freely. Sign in or register when you wish to order or customize.
+                </p>
+            </div>
+
+            <!-- Context Banner if redirecting from purchase or cart -->
+            {% if next and next != '/' %}
+            <div class="auth-context-banner">
+                <span style="font-size:1.3rem;">🍰</span>
+                <span style="font-size:0.86rem; color:var(--color-accent-rose); font-weight:600; line-height:1.4;">
+                    You are just one step away! Sign in or register to complete your cake order.
+                </span>
+            </div>
+            {% endif %}
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs-row" role="tablist">
+                <button type="button" class="auth-tab-btn" id="tabBtnLogin" onclick="switchAuthTab('login')" role="tab" aria-selected="true" aria-controls="loginTabContent">
+                    Sign In
+                </button>
+                <button type="button" class="auth-tab-btn" id="tabBtnRegister" onclick="switchAuthTab('register')" role="tab" aria-selected="false" aria-controls="registerTabContent">
+                    Create Account
+                </button>
+            </div>
+
+            <!-- Tab 1: SIGN IN FORM -->
+            <div id="loginTabContent" role="tabpanel" aria-labelledby="tabBtnLogin">
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+                    <div style="margin-bottom:18px;">
+                        <label for="id_username" style="display:block; font-size:0.85rem; font-weight:700; color:var(--color-cocoa-dark); margin-bottom:6px;">
+                            Username or Email Address
+                        </label>
+                        <input type="text" name="username" id="id_username" class="form-input-clean" value="{{ identifier|default:'' }}" placeholder="e.g. sarah or sarah@example.com" autocomplete="username" required style="margin-bottom:0;">
+                    </div>
+
+                    <div style="margin-bottom:24px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <label for="id_password" style="font-size:0.85rem; font-weight:700; color:var(--color-cocoa-dark); margin:0;">
+                                Password
+                            </label>
+                        </div>
+                        <input type="password" name="password" id="id_password" class="form-input-clean" placeholder="••••••••" autocomplete="current-password" required style="margin-bottom:0;">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom:18px; box-shadow:0 8px 24px rgba(34,22,20,0.18);">
+                        <span>Sign In &amp; Continue</span>
+                        <span>→</span>
+                    </button>
+
+                    <p style="text-align:center; font-size:0.88rem; color:var(--color-cocoa-muted);">
+                        <span>New to Sweet Slice?</span>
+                        <button type="button" class="btn-auth-link" onclick="switchAuthTab('register')">
+                            Create an account
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+            <!-- Tab 2: CREATE ACCOUNT FORM -->
+            <div id="registerTabContent" role="tabpanel" aria-labelledby="tabBtnRegister">
+                <form method="post" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+                    <div style="margin-bottom:16px;">
+                        <label for="reg_full_name" style="display:block; font-size:0.85rem; font-weight:700; color:var(--color-cocoa-dark); margin-bottom:6px;">
+                            Full Name
+                        </label>
+                        <input type="text" name="full_name" id="reg_full_name" class="form-input-clean" value="{{ reg_full_name|default:'' }}" placeholder="Sarah Jenkins" autocomplete="name" required style="margin-bottom:0;">
+                    </div>
+
+                    <div class="form-split-2" style="margin-bottom:16px;">
+                        <div>
+                            <label for="reg_username" style="display:block; font-size:0.85rem; font-weight:700; color:var(--color-cocoa-dark); margin-bottom:6px;">
+                                Username
+                            </label>
+                            <input type="text" name="username" id="reg_username" class="form-input-clean" value="{{ reg_username|default:'' }}" placeholder="sarah_cakes" autocomplete="username" required style="margin-bottom:0;">
+                        </div>
+                        <div>
+                            <label for="reg_email" style="display:block; font-size:0.85rem; font-weight:700; color:var(--color-cocoa-dark); margin-bottom:6px;">
+                                Email Address
+                            </label>
+                            <input type="email" name="email" id="reg_email" class="form-input-clean" value="{{ reg_email|default:'' }}" placeholder="sarah@example.com" autocomplete="email" required style="margin-bottom:0;">
+                        </div>
+                    </div>
+
+                    <div class="form-split-2" style="margin-bottom:24px;">
+                        <div>
+                            <label for="reg_password" style="display:block; font-size:0.85rem; font-weight:700; color:var(--color-cocoa-dark); margin-bottom:6px;">
+                                Password
+                            </label>
+                            <input type="password" name="password" id="reg_password" class="form-input-clean" placeholder="At least 4 chars" autocomplete="new-password" required style="margin-bottom:0;">
+                        </div>
+                        <div>
+                            <label for="reg_confirm" style="display:block; font-size:0.85rem; font-weight:700; color:var(--color-cocoa-dark); margin-bottom:6px;">
+                                Confirm Password
+                            </label>
+                            <input type="password" name="confirm_password" id="reg_confirm" class="form-input-clean" placeholder="Re-type password" autocomplete="new-password" required style="margin-bottom:0;">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom:18px; box-shadow:0 8px 24px rgba(34,22,20,0.18);">
+                        <span>Create Account &amp; Continue</span>
+                        <span>✨</span>
+                    </button>
+
+                    <p style="text-align:center; font-size:0.88rem; color:var(--color-cocoa-muted);">
+                        <span>Already registered?</span>
+                        <button type="button" class="btn-auth-link" onclick="switchAuthTab('login')">
+                            Sign in to your account
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+            <!-- Free Browsing Reassurance Badge -->
+            <div class="auth-trust-strip">
+                <span>✨ Free Catalog Browsing</span>
+                <span>•</span>
+                <span>🔒 Secure Razorpay Checkout</span>
+                <span>•</span>
+                <span>🍰 Fresh Chilled Delivery</span>
+            </div>
+
+            <!-- Quick Demo Helper Note -->
+            <div style="margin-top:20px; text-align:center;">
+                <p style="font-size:0.78rem; color:var(--color-cocoa-light);">
+                    Bakery Owner or Admin? Access the <a href="/admin/" style="color:var(--color-accent-caramel); font-weight:600; text-decoration:underline;">Django Admin Panel</a> with admin credentials.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchAuthTab(tab) {
+    const card = document.getElementById('authCard');
+    const tabLogin = document.getElementById('tabBtnLogin');
+    const tabRegister = document.getElementById('tabBtnRegister');
+
+    if (!card) return;
+
+    if (tab === 'register') {
+        card.setAttribute('data-active-tab', 'register');
+        tabRegister?.setAttribute('aria-selected', 'true');
+        tabLogin?.setAttribute('aria-selected', 'false');
+    } else {
+        card.setAttribute('data-active-tab', 'login');
+        tabLogin?.setAttribute('aria-selected', 'true');
+        tabRegister?.setAttribute('aria-selected', 'false');
+    }
+}
+</script>
+{% endblock %}

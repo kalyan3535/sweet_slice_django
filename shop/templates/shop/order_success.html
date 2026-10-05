@@ -1,0 +1,149 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Order Confirmed #{{ order.order_number }} — Sweet Slice Bakery{% endblock %}
+
+{% block content %}
+<div class="container-narrow" style="padding-top:40px; padding-bottom:80px;">
+    <!-- Celebration Hero Card -->
+    <div style="background:#FFFFFF; border:1px solid var(--border-card); border-radius:var(--radius-xl); padding:40px 32px; box-shadow:var(--shadow-card); text-align:center; margin-bottom:32px;">
+        <div style="width:78px; height:78px; background:var(--success-bg); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:2.4rem; color:var(--success); margin-bottom:16px; animation:scaleIn 0.4s ease;">
+            ✓
+        </div>
+
+        <h1 style="font-size:2.2rem; font-weight:800; margin-bottom:8px;">Order Confirmed & Baking in Progress!</h1>
+        <p style="color:var(--color-muted); font-size:1.05rem; max-width:540px; margin:0 auto 20px;">
+            Thank you, <strong>{{ order.customer_name }}</strong>! Your artisanal cake order has been scheduled with our master patisserie chef.
+        </p>
+
+        <!-- Order & Razorpay ID Pills -->
+        <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom:24px;">
+            <div style="background:#FAF7F2; border:1px solid var(--border-subtle); padding:6px 14px; border-radius:var(--radius-pill); font-size:0.85rem; font-weight:700;">
+                <span>Order No:</span> <span style="color:var(--brand-primary);" id="orderNumDisplay">{{ order.order_number }}</span>
+            </div>
+            <div style="background:var(--success-bg); border:1px solid rgba(18,140,87,0.3); padding:6px 14px; border-radius:var(--radius-pill); font-size:0.85rem; font-weight:700; color:var(--success);">
+                <span>⚡ Razorpay Verified:</span> <span>{{ order.razorpay_payment_id }}</span>
+            </div>
+        </div>
+
+        <!-- Live Order Tracking Stepper -->
+        <div style="background:#FAF7F2; border-radius:var(--radius-lg); padding:24px; margin-top:20px;">
+            <div style="font-size:0.82rem; font-weight:700; color:var(--color-muted); text-transform:uppercase; margin-bottom:18px;">
+                Live Bakery Progress Timeline
+            </div>
+            <div class="track-steps-grid">
+                <div style="color:var(--success); font-weight:700;">
+                    <div style="font-size:1.5rem;">✅</div>
+                    <div style="font-size:0.75rem;">Order Placed</div>
+                </div>
+                <div style="color:var(--brand-primary); font-weight:700;">
+                    <div style="font-size:1.5rem;">👩‍🍳</div>
+                    <div style="font-size:0.75rem;">Baking in Oven</div>
+                </div>
+                <div style="color:var(--color-light-muted); font-weight:600;">
+                    <div style="font-size:1.5rem;">🎁</div>
+                    <div style="font-size:0.75rem;">Decorating & Chilling</div>
+                </div>
+                <div style="color:var(--color-light-muted); font-weight:600;">
+                    <div style="font-size:1.5rem;">🛵</div>
+                    <div style="font-size:0.75rem;">Delivered</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Details Card -->
+    <div style="background:#FFFFFF; border:1px solid var(--border-card); border-radius:var(--radius-xl); padding:36px; box-shadow:var(--shadow-card);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border-subtle); flex-wrap:wrap; gap:12px;">
+            <div>
+                <h3 style="font-size:1.3rem; font-weight:800;">Bakery Delivery Receipt</h3>
+                <div style="font-size:0.82rem; color:var(--color-muted);">Placed on {{ order.created_at|date:"M d, Y • h:i A" }}</div>
+            </div>
+            <button onclick="window.print();" class="btn btn-secondary btn-sm" style="font-size:0.82rem;">
+                <span>🖨️ Print Invoice</span>
+            </button>
+        </div>
+
+        <!-- Custom Piped Icing Plaque -->
+        {% if order.cake_message %}
+        <div style="background:var(--accent-gold-light); border:1px dashed var(--accent-gold); border-radius:var(--radius-md); padding:14px 20px; margin-bottom:24px; display:flex; align-items:center; gap:12px;">
+            <span style="font-size:1.6rem;">🎂</span>
+            <div>
+                <div style="font-size:0.78rem; font-weight:700; color:var(--accent-gold); text-transform:uppercase;">Piped Greeting on Cake:</div>
+                <div style="font-family:var(--font-heading); font-size:1.15rem; font-weight:700; color:var(--color-dark);">
+                    "{{ order.cake_message }}"
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Order Items Detail -->
+        <div style="margin-bottom:24px;">
+            <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:12px; color:var(--color-charcoal);">Cakes Ordered:</h4>
+            {% for it in items_detail %}
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-subtle); font-size:0.92rem;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    {% if it.image_url %}
+                        <img src="{{ it.image_url }}" alt="{{ it.name }}" style="width:48px; height:48px; border-radius:8px; object-fit:cover;">
+                    {% endif %}
+                    <div>
+                        <div style="font-weight:700;">{{ it.name }}</div>
+                        <div style="font-size:0.78rem; color:var(--color-muted);">Weight: {{ it.weight }} • Quantity: {{ it.quantity }}</div>
+                    </div>
+                </div>
+                <div style="font-weight:700;">₹{{ it.subtotal|default:it.price }}</div>
+            </div>
+            {% empty %}
+            <div style="padding:10px 0; color:var(--color-muted); font-size:0.92rem;">{{ order.items }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Financial Summary -->
+        <div style="background:#FAF7F2; border-radius:var(--radius-md); padding:18px; margin-bottom:28px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;">
+                <span style="color:var(--color-muted);">Subtotal</span>
+                <span>₹{{ order.subtotal }}</span>
+            </div>
+            {% if order.discount > 0 %}
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem; color:var(--success);">
+                <span>Discount Applied</span>
+                <span>−₹{{ order.discount }}</span>
+            </div>
+            {% endif %}
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.9rem;">
+                <span style="color:var(--color-muted);">Express Delivery</span>
+                <span>{% if order.delivery_fee == 0 %}FREE{% else %}₹{{ order.delivery_fee }}{% endif %}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:1.3rem; font-family:var(--font-heading); font-weight:800; border-top:1px solid var(--border-subtle); padding-top:10px; color:var(--color-dark);">
+                <span>Total Paid ({{ order.payment_method }})</span>
+                <span style="color:var(--brand-primary);">₹{{ order.total }}</span>
+            </div>
+        </div>
+
+        <!-- Delivery Address Details -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; font-size:0.88rem; margin-bottom:30px;">
+            <div>
+                <div style="font-weight:700; color:var(--color-charcoal); margin-bottom:4px;">Delivery Destination:</div>
+                <div style="color:var(--color-muted); line-height:1.5;">{{ order.address }}</div>
+            </div>
+            <div>
+                <div style="font-weight:700; color:var(--color-charcoal); margin-bottom:4px;">Contact & Timing:</div>
+                <div style="color:var(--color-muted); line-height:1.5;">
+                    Phone: {{ order.phone }}<br>
+                    Slot: {{ order.delivery_date }} • {{ order.delivery_slot }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Links -->
+        <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+            <a href="{% url 'track_order' %}?q={{ order.order_number }}" class="btn btn-secondary">
+                <span>📦 Track This Order Live</span>
+            </a>
+            <a href="{% url 'cakes' %}" class="btn btn-primary">
+                <span>🍰 Order Another Cake</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

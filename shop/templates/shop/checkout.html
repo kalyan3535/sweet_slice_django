@@ -1,0 +1,557 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Delivery Details &amp; Checkout — Sweet Slice Patisserie{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── Checkout Page Design System ────────────────────────── */
+    .checkout-flow-container {
+        padding-top: 36px;
+        padding-bottom: 90px;
+    }
+
+    /* Checkout Stepper */
+    .checkout-stepper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 28px;
+        margin-bottom: 38px;
+        flex-wrap: wrap;
+    }
+    .stepper-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--color-cocoa-light);
+    }
+    .stepper-step.completed {
+        color: var(--color-success);
+    }
+    .stepper-step.active {
+        color: var(--color-cocoa-dark);
+        font-weight: 700;
+    }
+    .stepper-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 1.5px solid var(--color-border);
+        background: #FFFFFF;
+        color: var(--color-cocoa-muted);
+    }
+    .stepper-step.completed .stepper-num {
+        background: var(--color-success-bg);
+        border-color: var(--color-success);
+        color: var(--color-success);
+    }
+    .stepper-step.active .stepper-num {
+        background: var(--color-cocoa-dark);
+        border-color: var(--color-cocoa-dark);
+        color: #FFFFFF;
+    }
+    .stepper-divider {
+        width: 32px;
+        height: 1px;
+        background: var(--color-border);
+    }
+
+    /* Grid Layout */
+    .checkout-two-col-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 0.85fr;
+        gap: 36px;
+        align-items: flex-start;
+    }
+
+    /* Section Card */
+    .checkout-card {
+        background: #FFFFFF;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl, 24px);
+        padding: 32px;
+        box-shadow: 0 4px 24px rgba(34, 22, 20, 0.04);
+        margin-bottom: 24px;
+    }
+
+    .checkout-section-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 22px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .section-icon-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--color-accent-caramel-light);
+        color: var(--color-accent-caramel);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .section-title {
+        font-family: var(--font-serif);
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--color-cocoa-dark);
+        margin: 0;
+    }
+
+    /* Form Fields */
+    .field-label {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--color-cocoa-dark);
+        display: block;
+        margin-bottom: 6px;
+        letter-spacing: 0.01em;
+    }
+    .field-hint {
+        font-size: 0.76rem;
+        color: var(--color-cocoa-muted);
+        margin-top: 4px;
+    }
+    .input-with-prefix {
+        display: flex;
+        align-items: center;
+        background: #FAF7F2;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: all var(--transition);
+        margin-bottom: 16px;
+    }
+    .input-with-prefix:focus-within {
+        background: #FFFFFF;
+        border-color: var(--color-cocoa-dark);
+        box-shadow: 0 0 0 3px rgba(34, 22, 20, 0.08);
+    }
+    .input-prefix {
+        padding: 0 14px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--color-cocoa-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border-right: 1px solid var(--color-border);
+        background: rgba(0,0,0,0.02);
+        height: 100%;
+        user-select: none;
+    }
+    .input-with-prefix input {
+        border: none !important;
+        background: transparent !important;
+        margin-bottom: 0 !important;
+        box-shadow: none !important;
+        padding: 13px 16px;
+        width: 100%;
+        outline: none;
+    }
+
+    /* Payment Option Selectors */
+    .payment-option-card {
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-lg, 18px);
+        padding: 20px 22px;
+        margin-bottom: 14px;
+        cursor: pointer;
+        transition: all 0.22s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #FFFFFF;
+        position: relative;
+    }
+    .payment-option-card:hover {
+        border-color: var(--color-cocoa-muted);
+        background: #FCFAF7;
+    }
+    .payment-option-card.selected {
+        border-color: var(--color-cocoa-dark);
+        background: #FFFDF9;
+        box-shadow: 0 4px 18px rgba(34, 22, 20, 0.06);
+    }
+    .payment-option-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .payment-radio-circle {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    .payment-option-card.selected .payment-radio-circle {
+        border-color: var(--color-cocoa-dark);
+    }
+    .payment-radio-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--color-cocoa-dark);
+        opacity: 0;
+        transform: scale(0.6);
+        transition: all 0.2s;
+    }
+    .payment-option-card.selected .payment-radio-dot {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* Sticky Order Summary */
+    .order-summary-box {
+        position: sticky;
+        top: 100px;
+        background: #FFFFFF;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl, 24px);
+        padding: 32px;
+        box-shadow: 0 8px 32px rgba(34, 22, 20, 0.05);
+    }
+    .summary-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        font-size: 0.88rem;
+    }
+    .summary-item-img {
+        width: 52px;
+        height: 52px;
+        border-radius: var(--radius-md);
+        object-fit: cover;
+        border: 1px solid var(--color-border-subtle);
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 900px) {
+        .checkout-two-col-grid {
+            grid-template-columns: 1fr;
+            gap: 28px;
+        }
+        .order-summary-box {
+            position: static;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .checkout-stepper {
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .stepper-step span:not(.stepper-num) {
+            font-size: 0.78rem;
+        }
+        .stepper-divider {
+            width: 14px;
+        }
+        .checkout-card {
+            padding: 20px 16px;
+            border-radius: var(--radius-lg, 18px);
+        }
+        .order-summary-box {
+            padding: 22px 16px;
+            border-radius: var(--radius-lg, 18px);
+        }
+        .checkout-flow-container {
+            padding-top: 24px;
+            padding-bottom: 60px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container checkout-flow-container">
+    <!-- Stepper Navigation -->
+    <div class="checkout-stepper">
+        <a href="{% url 'cart' %}" class="stepper-step completed">
+            <span class="stepper-num">✓</span>
+            <span>Shopping Bag</span>
+        </a>
+        <div class="stepper-divider"></div>
+        <div class="stepper-step active">
+            <span class="stepper-num">2</span>
+            <span>Delivery &amp; Details</span>
+        </div>
+        <div class="stepper-divider"></div>
+        <div class="stepper-step">
+            <span class="stepper-num">3</span>
+            <span>Razorpay Secure Payment</span>
+        </div>
+    </div>
+
+    <!-- Main Two-Column Layout -->
+    <div class="checkout-two-col-grid">
+        <!-- Left: Delivery & Customer Information Form -->
+        <div class="checkout-form-column">
+            <form id="checkoutOrderForm" method="post" action="{% url 'checkout' %}">
+                {% csrf_token %}
+                <input type="hidden" name="payment_method" id="selectedPaymentMethod" value="Razorpay (Online)">
+
+                <!-- 1. Customer Information Card -->
+                <div class="checkout-card">
+                    <div class="checkout-section-header">
+                        <div class="section-icon-badge">👤</div>
+                        <div>
+                            <h2 class="section-title">1. Recipient Contact Details</h2>
+                            <p style="font-size:0.8rem; color:var(--color-cocoa-muted); margin-top:2px;">Order status SMS and verified digital receipt will be sent here.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-split-2">
+                        <div>
+                            <label for="custNameInput" class="field-label">Full Name *</label>
+                            <input type="text" name="name" id="custNameInput" class="form-input-clean" 
+                                   value="{{ default_name|default:'' }}" placeholder="e.g. Aryan Kapoor" required>
+                        </div>
+                        <div>
+                            <label for="custPhoneInput" class="field-label">Mobile Phone *</label>
+                            <div class="input-with-prefix">
+                                <div class="input-prefix">🇮🇳 +91</div>
+                                <input type="tel" name="phone" id="custPhoneInput" 
+                                       value="{{ default_phone|default:'' }}" placeholder="98201 12345" required maxlength="12">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="custEmailInput" class="field-label">Email Address (Optional)</label>
+                        <input type="email" name="email" id="custEmailInput" class="form-input-clean" 
+                               value="{{ default_email|default:'' }}" placeholder="aryan.kapoor@example.com">
+                        <div class="field-hint">We will email the branded GST invoice and live tracking link.</div>
+                    </div>
+                </div>
+
+                <!-- 2. Delivery Destination & Timing Card -->
+                <div class="checkout-card">
+                    <div class="checkout-section-header">
+                        <div class="section-icon-badge">📍</div>
+                        <div>
+                            <h2 class="section-title">2. Delivery Schedule &amp; Destination</h2>
+                            <p style="font-size:0.8rem; color:var(--color-cocoa-muted); margin-top:2px;">Transported in temperature-controlled patisserie carriers.</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label for="custAddressInput" class="field-label">Full Delivery Address *</label>
+                        <textarea name="address" id="custAddressInput" rows="3" class="form-input-clean" 
+                                  placeholder="Apartment / Villa Number, Tower, Street Name, Landmark, Pincode" required>{{ default_address|default:'' }}</textarea>
+                    </div>
+
+                    <div class="form-split-2">
+                        <div>
+                            <label for="deliveryDateSelect" class="field-label">Delivery Date *</label>
+                            <select name="delivery_date" id="deliveryDateSelect" class="form-input-clean">
+                                <option value="Today (Express 2-Hour Delivery)">Today (Express 2-Hour Delivery)</option>
+                                <option value="Tomorrow Morning">Tomorrow Morning</option>
+                                <option value="Tomorrow Evening" selected>Tomorrow Evening</option>
+                                <option value="Scheduled Weekend Special">Scheduled Weekend Special</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="deliverySlotSelect" class="field-label">Preferred Time Slot *</label>
+                            <select name="delivery_slot" id="deliverySlotSelect" class="form-input-clean">
+                                <option value="Morning (9:00 AM - 1:00 PM)">Morning (9:00 AM – 1:00 PM)</option>
+                                <option value="Afternoon (2:00 PM - 6:00 PM)" selected>Afternoon (2:00 PM – 6:00 PM)</option>
+                                <option value="Evening (6:00 PM - 10:00 PM)">Evening (6:00 PM – 10:00 PM)</option>
+                                <option value="Midnight Surprise (11:45 PM - 12:15 AM)">Midnight Surprise (11:45 PM – 12:15 AM)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="cakeMessageInput" class="field-label">Piped Greeting or Special Message on Cake</label>
+                        <input type="text" name="cake_message" id="cakeMessageInput" class="form-input-clean" 
+                               placeholder="e.g. Happy 25th Anniversary Mom &amp; Dad! 🥂" maxlength="60">
+                        <div class="field-hint">Our master chefs will hand-pipe this custom greeting onto chocolate plaques.</div>
+                    </div>
+                </div>
+
+                <!-- 3. Payment Method Choice Card -->
+                <div class="checkout-card">
+                    <div class="checkout-section-header">
+                        <div class="section-icon-badge">💳</div>
+                        <div>
+                            <h2 class="section-title">3. Choose Payment Method</h2>
+                            <p style="font-size:0.8rem; color:var(--color-cocoa-muted); margin-top:2px;">Select online banking via Razorpay or Cash on Delivery.</p>
+                        </div>
+                    </div>
+
+                    <!-- Option 1: Razorpay Online (Recommended) -->
+                    <div class="payment-option-card selected" id="optRazorpay" onclick="choosePayment('Razorpay (Online)')">
+                        <div class="payment-option-left">
+                            <div class="payment-radio-circle">
+                                <div class="payment-radio-dot"></div>
+                            </div>
+                            <div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <strong style="font-size:0.96rem; color:var(--color-cocoa-dark);">⚡ Razorpay Secure Checkout</strong>
+                                    <span style="background:var(--color-accent-rose-light); color:var(--color-accent-rose); font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:var(--radius-pill);">Recommended</span>
+                                </div>
+                                <div style="font-size:0.78rem; color:var(--color-cocoa-muted); margin-top:3px;">
+                                    Google Pay, PhonePe, Paytm, Any UPI QR, Credit/Debit Cards, Netbanking
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size:1.3rem;">🛡️</div>
+                    </div>
+
+                    <!-- Option 2: Cash on Delivery -->
+                    <div class="payment-option-card" id="optCOD" onclick="choosePayment('Cash on Delivery')">
+                        <div class="payment-option-left">
+                            <div class="payment-radio-circle">
+                                <div class="payment-radio-dot"></div>
+                            </div>
+                            <div>
+                                <strong style="font-size:0.96rem; color:var(--color-cocoa-dark);">💵 Cash on Delivery (COD)</strong>
+                                <div style="font-size:0.78rem; color:var(--color-cocoa-muted); margin-top:3px;">
+                                    Pay via cash or UPI scan when your chilled cake arrives at your door.
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size:1.3rem;">🍰</div>
+                    </div>
+
+                    <div style="margin-top:24px;">
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnContinueCheckout">
+                            <span id="btnContinueText">Proceed to Razorpay Payment (₹{{ cart_info.total }})</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right: Sticky Order Summary -->
+        <div class="order-summary-column">
+            <div class="order-summary-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--color-border-subtle);">
+                    <h3 style="font-size:1.35rem; font-weight:600; font-family:var(--font-serif); margin:0;">Order Review</h3>
+                    <span style="font-size:0.8rem; font-weight:700; color:var(--color-accent-caramel); background:var(--color-accent-caramel-light); padding:3px 10px; border-radius:var(--radius-pill);">
+                        {{ cart_info.count }} {% if cart_info.count == 1 %}Item{% else %}Items{% endif %}
+                    </span>
+                </div>
+
+                <!-- Items List -->
+                <div style="max-height:280px; overflow-y:auto; margin-bottom:20px; padding-right:4px;">
+                    {% for item in cart_info.items %}
+                    <div class="summary-item-row">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <img src="{{ item.cake.image_url }}" alt="{{ item.cake.name }}" class="summary-item-img"
+                                 onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100&auto=format&fit=crop&q=80';">
+                            <div>
+                                <div style="font-weight:700; color:var(--color-cocoa-dark); line-height:1.2;">{{ item.cake.name }}</div>
+                                <div style="font-size:0.76rem; color:var(--color-cocoa-muted); margin-top:2px;">
+                                    {{ item.weight }} × {{ item.quantity }}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-weight:700; color:var(--color-cocoa-dark); white-space:nowrap;">
+                            ₹{{ item.subtotal }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Price Breakdown -->
+                <div style="border-top:1px solid var(--color-border-subtle); padding-top:16px; margin-bottom:24px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem; color:var(--color-cocoa-muted);">
+                        <span>Subtotal</span>
+                        <span style="font-weight:600; color:var(--color-cocoa-dark);">₹{{ cart_info.subtotal }}</span>
+                    </div>
+
+                    {% if cart_info.discount > 0 %}
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem; color:var(--color-success); font-weight:600;">
+                        <span>Promotional Discount</span>
+                        <span>−₹{{ cart_info.discount }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div style="display:flex; justify-content:space-between; margin-bottom:16px; font-size:0.9rem; color:var(--color-cocoa-muted);">
+                        <span>Chilled Patisserie Delivery</span>
+                        <span>
+                            {% if cart_info.delivery_fee == 0 %}
+                                <strong style="color:var(--color-success); font-weight:700;">FREE</strong>
+                            {% else %}
+                                ₹{{ cart_info.delivery_fee }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; font-size:1.45rem; font-family:var(--font-serif); font-weight:700; padding-top:14px; border-top:1px solid var(--color-border); color:var(--color-cocoa-dark);">
+                        <span>Grand Total</span>
+                        <span style="color:var(--color-accent-rose);">₹{{ cart_info.total }}</span>
+                    </div>
+                </div>
+
+                <!-- Trust Guarantees -->
+                <div style="background:#FAF7F2; border-radius:var(--radius-md); padding:14px 16px; font-size:0.78rem; color:var(--color-cocoa-muted); line-height:1.5;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; font-weight:700; color:var(--color-cocoa-dark);">
+                        <span>🛡️</span>
+                        <span>Sweet Slice Purity &amp; Freshness Guarantee</span>
+                    </div>
+                    Handcrafted within hours of delivery. Baked using imported Belgian chocolate, natural butter, and organic fruit purees.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPaymentMode = 'Razorpay (Online)';
+
+    function choosePayment(mode) {
+        currentPaymentMode = mode;
+        document.getElementById('selectedPaymentMethod').value = mode;
+
+        const optRzp = document.getElementById('optRazorpay');
+        const optCod = document.getElementById('optCOD');
+        const btnText = document.getElementById('btnContinueText');
+
+        if (mode === 'Razorpay (Online)') {
+            optRzp.classList.add('selected');
+            optCod.classList.remove('selected');
+            btnText.textContent = "Proceed to Razorpay Payment (₹{{ cart_info.total }})";
+        } else {
+            optCod.classList.add('selected');
+            optRzp.classList.remove('selected');
+            btnText.textContent = "Confirm Order via Cash on Delivery (₹{{ cart_info.total }})";
+        }
+    }
+
+    // Client-side quick check
+    document.getElementById('checkoutOrderForm').addEventListener('submit', function(e) {
+        const name = document.getElementById('custNameInput').value.trim();
+        const phone = document.getElementById('custPhoneInput').value.trim();
+        const address = document.getElementById('custAddressInput').value.trim();
+
+        if (!name || !phone || !address) {
+            e.preventDefault();
+            alert("Please complete the required name, phone, and delivery address fields.");
+        }
+    });
+</script>
+{% endblock %}
